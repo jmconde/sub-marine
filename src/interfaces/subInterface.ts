@@ -7,6 +7,9 @@ interface Sub {
   uploader: String;
   dateUpload: Date;
   url: String;
+  lang: String;
+  score: Number,
+  title: String
 }
 
 export default Sub;

@@ -1,5 +1,5 @@
 import SubMarine from './main';
-import OriginInterface from './originInterface';
+import OriginInterface from './interfaces/originInterface';
 import SubdivxOrigin from './subdivx';
 
 
