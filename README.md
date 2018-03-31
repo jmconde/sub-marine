@@ -1,1 +1,1 @@
-[logo]: https://raw.githubusercontent.com/jmconde/samples/master/dive-mask.svg "SubMarine"
+# ![SubMarine](https://raw.githubusercontent.com/jmconde/samples/master/dive-mask.svg?sanitize=true) SubMarine
