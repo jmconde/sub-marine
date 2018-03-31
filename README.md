@@ -1,6 +1,6 @@
 # <img alt="SubMarine" src="https://raw.githubusercontent.com/jmconde/samples/master/submarine.svg?sanitize=true" width="50" height="50" /> SubMarine
 
-Is not just another subtitle downloader, SubMarine intends to provide a common interface for download subtitle from different sources.
+Is not just another subtitle downloader, SubMarine intends to provide a common interface to download subtitle from different sources.
 
 For now it just have an interface to access SubDivX a latin (spanish) popular subtitles download site but more sources are going to be added in the future if I have time of course. =P
 
