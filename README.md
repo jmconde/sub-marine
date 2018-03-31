@@ -1,1 +1,1 @@
-# <img alt="SubMarine" src="https://raw.githubusercontent.com/jmconde/samples/master/dive-mask.svg?sanitize=true" width="50" height="50" /> SubMarine
+# <img alt="SubMarine" src="https://raw.githubusercontent.com/jmconde/samples/master/submarine.svg?sanitize=true" width="50" height="50" /> SubMarine
