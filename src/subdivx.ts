@@ -1,8 +1,10 @@
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
-import OriginInterface from "./interfaces/originInterface";
-import Sub from "./interfaces/subInterface";
+import axios from 'axios';
+import chalk from 'chalk';
 import * as cheerio from 'cheerio';
 import * as stringScore from 'string-score';
+
+import OriginInterface from './interfaces/originInterface';
+import Sub from './interfaces/subInterface';
 
 class SubdivxOrigin implements OriginInterface {
   private searchText: String;
@@ -135,7 +137,7 @@ class SubdivxOrigin implements OriginInterface {
     this.searchText = text;
     this.actualPage = 1;
 
-    console.log('Searching...', text);
+    console.log(chalk.gray('Searching for ... ') + chalk.yellow(text.toString()));
 
     while (!finished) {
       await new Promise<Sub[]>((resolve, reject) => {
@@ -157,6 +159,10 @@ class SubdivxOrigin implements OriginInterface {
 
   search(text: String, tuneText?: String):  Promise<Sub[]> {
     return this.lookup(text, tuneText);
+  }
+
+  download(sub, dest): Promise<void> {
+    return null;
   }
 }
 

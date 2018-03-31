@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = require("axios");
+const chalk_1 = require("chalk");
 const cheerio = require("cheerio");
 const stringScore = require("string-score");
 class SubdivxOrigin {
@@ -127,7 +128,7 @@ class SubdivxOrigin {
             };
             this.searchText = text;
             this.actualPage = 1;
-            console.log('Searching...', text);
+            console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(text.toString()));
             while (!finished) {
                 yield new Promise((resolve, reject) => {
                     this.getPage(text, tuneText).then((subs) => {
@@ -148,6 +149,9 @@ class SubdivxOrigin {
     }
     search(text, tuneText) {
         return this.lookup(text, tuneText);
+    }
+    download(sub, dest) {
+        return null;
     }
 }
 exports.default = SubdivxOrigin;

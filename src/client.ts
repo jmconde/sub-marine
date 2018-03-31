@@ -1,7 +1,9 @@
+import chalk from 'chalk';
 import * as commander from 'commander';
 import { prompt } from 'inquirer';
-import SubMarine from './main';
+
 import Sub from './interfaces/subInterface';
+import SubMarine from './main';
 
 const OPTIONS = [{
   type: 'list',
@@ -29,6 +31,51 @@ const subOptions = subs => {
   }
 };
 
+const AGAIN = {
+  type: 'confirm',
+  name: 'confirm',
+  message: 'Do you want search again?'
+}
+
+async function searchCycle(): Promise<void> {
+  var finished = false;
+  var submarine = new SubMarine();
+
+  while (!finished) {
+    await new Promise<void>((resolve, reject) => {
+
+      prompt(OPTIONS).then(answers => {
+        submarine.get(answers.origin, answers.title, answers.tune)
+          .then(subs => {
+            if (subs && subs.length) {
+              prompt(subOptions(subs)).then(subSelection => {
+                submarine.download(subSelection.sub)
+                  .then(() => {
+                    prompt(AGAIN).then(again => {
+                      again.confirm ? resolve() : reject();
+                    })
+                  })
+                  .catch(() => {
+                    console.log(chalk.red('Error!'));
+                    prompt(AGAIN).then(again => {
+                      again.confirm ? resolve() : reject();
+                    });
+                  })
+              });
+            } else {
+              console.log(chalk.yellow('Not subs were found.'));
+              prompt(AGAIN).then(again => {
+                again.confirm ? resolve() : reject();
+              });
+            }
+          })
+      })
+    });
+  }
+
+  return Promise.resolve();
+}
+
 commander
   .version('0.0.1')
   .description('subtitles marine');
@@ -38,17 +85,11 @@ commander
   .alias('s')
   .description('Search')
   .action(() => {
-    prompt(OPTIONS).then(answers => {
-      var submarine = new SubMarine();
-
-      submarine.get(answers.origin, answers.title, answers.tune)
-        .then(subs => {
-          prompt(subOptions(subs)).then(subSelection => {
-            submarine.download(subSelection.sub)
-          });
-        })
-
-    })
+     searchCycle()
+      .catch(() => {
+        console.log(chalk.gray(`Thanks for using ${chalk.white('SubMarine')}.`));
+        process.exit(0);
+      });
   });
 
 commander.parse(process.argv);
