@@ -77,6 +77,7 @@ class Commons {
             }
         });
     }
+    static hash() { }
 }
 exports.default = Commons;
 //# sourceMappingURL=commons.js.map

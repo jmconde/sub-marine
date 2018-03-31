@@ -3,8 +3,8 @@ import chalk from 'chalk';
 import * as cheerio from 'cheerio';
 import * as stringScore from 'string-score';
 
-import OriginInterface from './interfaces/originInterface';
-import Sub from './interfaces/subInterface';
+import OriginInterface from '../../interfaces/originInterface';
+import Sub from '../../interfaces/subInterface';
 
 class SubdivxOrigin implements OriginInterface {
   private searchText: String;
@@ -16,6 +16,7 @@ class SubdivxOrigin implements OriginInterface {
   private readonly ratingImgSelector = 'img.detalle_calif';
   private readonly barraSelector = '#menu_detalle_buscador';
   private readonly titleSelector = '#menu_titulo_buscador a.titulo_menu_izq';
+  readonly authRequired = false;
 
 
   private readonly RATING = {

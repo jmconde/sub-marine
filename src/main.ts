@@ -16,11 +16,17 @@ class SubMarine {
 
   get(originType: String, textToSearch: String, tuneText?: String): Promise<Sub[]> {
     let origin: OriginInterface = OriginFactory.getOrigin(originType);
-    return origin.search(textToSearch, tuneText);
+    let promise: Promise<any> = Promise.resolve();
+
+    if (origin.authRequired) {
+      promise = promise.then(() => origin.authenticate())
+    }
+
+    return promise.then(() => origin.search(textToSearch, tuneText));
   }
 
   download(sub: Sub, path: string = './'): Promise<void> {
-      var date = new Date().getTime();
+    var date = new Date().getTime();
     var tempFile = `./temp_${date}`;
     var found = false;
     var type;

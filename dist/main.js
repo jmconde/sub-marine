@@ -9,7 +9,11 @@ const factory_1 = require("./factory");
 class SubMarine {
     get(originType, textToSearch, tuneText) {
         let origin = factory_1.default.getOrigin(originType);
-        return origin.search(textToSearch, tuneText);
+        let promise = Promise.resolve();
+        if (origin.authRequired) {
+            promise = promise.then(() => origin.authenticate());
+        }
+        return promise.then(() => origin.search(textToSearch, tuneText));
     }
     download(sub, path = './') {
         var date = new Date().getTime();

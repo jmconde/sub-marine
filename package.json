@@ -1,5 +1,5 @@
 {
-  "name": "submarine",
+  "name": "@jose.conde/submarine",
   "version": "0.0.1",
   "description": "",
   "main": "dist/main.js",
@@ -25,7 +25,8 @@
     "request": "^2.85.0",
     "string-score": "^1.0.1",
     "tslint": "^5.9.1",
-    "unzip": "^0.1.11"
+    "unzip": "^0.1.11",
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "@types/es6-promise": "^3.3.0"

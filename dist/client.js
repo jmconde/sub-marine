@@ -12,11 +12,12 @@ const chalk_1 = require("chalk");
 const commander = require("commander");
 const inquirer_1 = require("inquirer");
 const main_1 = require("./main");
+const origin_types_1 = require("./origins/origin-types");
 const OPTIONS = [{
         type: 'list',
         name: 'origin',
         message: 'Select a choice:',
-        choices: [{ name: 'SubDivX', value: main_1.default.ORIGINS.SUBDIVX }, { name: 'OpenSubtitles', value: 23 }]
+        choices: [{ name: 'SubDivX', value: origin_types_1.default.ORIGIN.SUBDIVX }, { name: 'OpenSubtitles', value: origin_types_1.default.ORIGIN.OPEN_SUBTITLES }]
     }, {
         type: 'input',
         name: 'title',

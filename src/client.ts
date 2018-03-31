@@ -4,12 +4,13 @@ import { prompt } from 'inquirer';
 
 import Sub from './interfaces/subInterface';
 import SubMarine from './main';
+import TYPES from './origins/origin-types';
 
 const OPTIONS = [{
   type: 'list',
   name: 'origin',
   message: 'Select a choice:',
-  choices: [{name: 'SubDivX', value: SubMarine.ORIGINS.SUBDIVX}, {name: 'OpenSubtitles', value: 23}]
+  choices: [{name: 'SubDivX', value: TYPES.ORIGIN.SUBDIVX}, {name: 'OpenSubtitles', value: TYPES.ORIGIN.OPEN_SUBTITLES}]
 }, {
   type: 'input',
   name: 'title',

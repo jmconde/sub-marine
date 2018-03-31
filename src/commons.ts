@@ -85,4 +85,6 @@ export default class Commons {
     });
 
   }
+
+  static hash () {}
 }
