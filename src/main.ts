@@ -14,7 +14,7 @@ class SubMarine {
     SUBDIVX: 'subdivx'
   };
 
-  get(originType: String, textToSearch: String, tuneText?: String) {
+  get(originType: String, textToSearch: String, tuneText?: String): Promise<Sub[]> {
     let origin: OriginInterface = OriginFactory.getOrigin(originType);
     return origin.search(textToSearch, tuneText);
   }
