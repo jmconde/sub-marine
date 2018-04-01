@@ -10,8 +10,8 @@ This is the class SubMarine definition:
 
 ```javascript
 class SubMarine {
-  // Gets list of subtitle objects available.
-  get(originType: String, textToSearch: String, tuneText?: String): Promise<Sub[]> { ... }
+  // Gets list of subtitle objects available for the file in the path.
+  get(originType: String, filepath: string): Promise<Sub[]> { ... }
 
   // Download a subtitle in the specified path
   download(sub: Sub, path: string = './'): Promise<void> { ... }
