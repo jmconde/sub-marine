@@ -1,12 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const opensubtitle_utils_1 = require("./opensubtitle-utils");
 class OpenSubtitleAuth {
     constructor(username, password, lang, agent) {
-        this.data = opensubtitle_utils_1.getRequestMessage('LogIn', [username, password, lang, agent]);
+        this.authenticated = false;
+        this.username = username;
+        this.password = password;
+        this.lang = lang;
+        this.agent = agent;
     }
     getAuthData() {
-        return this.data;
+        return [this.username, this.password, this.lang, this.agent];
+    }
+    setRaw(raw) {
+        this.raw = raw;
+    }
+    getRaw() {
+        return this.raw;
     }
 }
 exports.default = OpenSubtitleAuth;

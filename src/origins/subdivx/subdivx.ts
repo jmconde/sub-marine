@@ -5,6 +5,7 @@ import * as stringScore from 'string-score';
 
 import OriginInterface from '../../interfaces/originInterface';
 import Sub from '../../interfaces/subInterface';
+import Metadata from '../../interfaces/metadata';
 
 class SubdivxOrigin implements OriginInterface {
   private searchText: String;
@@ -43,9 +44,9 @@ class SubdivxOrigin implements OriginInterface {
     return Math.round(score * total);
   }
 
-  private getPage(text: String, tuneText: String): Promise<Sub[]> {
+  private getPage(meta: Metadata): Promise<Sub[]> {
     return new Promise<Sub[]>((resolve, reject) => {
-      axios.get(this.getUrl(text), {}).then((response) => {
+      axios.get(this.getUrl(meta.search), {}).then((response) => {
         var $ = cheerio.load(response.data);
         var $subs = $(this.subSelector);
         var subs: Sub[] = [];
@@ -90,13 +91,10 @@ class SubdivxOrigin implements OriginInterface {
           var $rating = $bar.find(this.ratingImgSelector);
           rating = this.RATING[$rating.attr('src')] || null;
 
-          var $title = $bar.find(this.titleSelector);
-          title = $title.text().replace('Subtitulo de ', '');
-
           var description = $detalle.text();
           var uploader = $a.eq(1).text();
           var url = $a.eq(2).attr('href');
-          var score = this.getScore(title + ' ' + description + ' ' + format, text + ' ' +  tuneText);
+          var score = this.getScore(title + ' ' + description + ' ' + format, meta.search);
           var lang = 'es';
 
 
@@ -110,18 +108,27 @@ class SubdivxOrigin implements OriginInterface {
             url,
             score,
             lang,
-            title,
+            meta
           };
 
           subs.push(sub);
 
         });
+
+        // TODO:
+        // if (tuneText && tuneText instanceof String && tuneText !== "") {
+        //   console.log('going to filter');
+        //   subs.filter(d => {
+        //     return true;
+        //   })
+        // }
+
         resolve(subs);
       });
     });
   }
 
-  private async lookup(text: String, tuneText: String): Promise<Sub[]> {
+  private async lookup(meta: Metadata): Promise<Sub[]> {
     var found: Sub[] = [];
     var finished = false;
     var error = false;
@@ -135,14 +142,13 @@ class SubdivxOrigin implements OriginInterface {
       }
     };
 
-    this.searchText = text;
     this.actualPage = 1;
 
-    console.log(chalk.gray('Searching for ... ') + chalk.yellow(text.toString()));
+    console.log(chalk.gray('Searching for ... ') + chalk.yellow(meta.search.toString()));
 
     while (!finished) {
       await new Promise<Sub[]>((resolve, reject) => {
-        this.getPage(text, tuneText).then((subs: Sub[]) => {
+        this.getPage(meta).then((subs: Sub[]) => {
           found = found.concat(subs);
           this.actualPage++;
           resolve()
@@ -158,8 +164,9 @@ class SubdivxOrigin implements OriginInterface {
     return Promise.resolve(found.sort(sortFn));
   }
 
-  search(text: String, tuneText?: String):  Promise<Sub[]> {
-    return this.lookup(text, tuneText);
+
+  search(meta: Metadata):  Promise<Sub[]> {
+    return this.lookup(meta);
   }
 
   download(sub, dest): Promise<void> {

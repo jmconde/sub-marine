@@ -43,9 +43,9 @@ class SubdivxOrigin {
         var score = stringScore(textToCompare, textToFind, fuzziness);
         return Math.round(score * total);
     }
-    getPage(text, tuneText) {
+    getPage(meta) {
         return new Promise((resolve, reject) => {
-            axios_1.default.get(this.getUrl(text), {}).then((response) => {
+            axios_1.default.get(this.getUrl(meta.search), {}).then((response) => {
                 var $ = cheerio.load(response.data);
                 var $subs = $(this.subSelector);
                 var subs = [];
@@ -86,12 +86,10 @@ class SubdivxOrigin {
                     }
                     var $rating = $bar.find(this.ratingImgSelector);
                     rating = this.RATING[$rating.attr('src')] || null;
-                    var $title = $bar.find(this.titleSelector);
-                    title = $title.text().replace('Subtitulo de ', '');
                     var description = $detalle.text();
                     var uploader = $a.eq(1).text();
                     var url = $a.eq(2).attr('href');
-                    var score = this.getScore(title + ' ' + description + ' ' + format, text + ' ' + tuneText);
+                    var score = this.getScore(title + ' ' + description + ' ' + format, meta.search);
                     var lang = 'es';
                     sub = {
                         description,
@@ -103,15 +101,22 @@ class SubdivxOrigin {
                         url,
                         score,
                         lang,
-                        title,
+                        meta
                     };
                     subs.push(sub);
                 });
+                // TODO:
+                // if (tuneText && tuneText instanceof String && tuneText !== "") {
+                //   console.log('going to filter');
+                //   subs.filter(d => {
+                //     return true;
+                //   })
+                // }
                 resolve(subs);
             });
         });
     }
-    lookup(text, tuneText) {
+    lookup(meta) {
         return __awaiter(this, void 0, void 0, function* () {
             var found = [];
             var finished = false;
@@ -127,12 +132,11 @@ class SubdivxOrigin {
                     return 1;
                 }
             };
-            this.searchText = text;
             this.actualPage = 1;
-            console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(text.toString()));
+            console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(meta.search.toString()));
             while (!finished) {
                 yield new Promise((resolve, reject) => {
-                    this.getPage(text, tuneText).then((subs) => {
+                    this.getPage(meta).then((subs) => {
                         found = found.concat(subs);
                         this.actualPage++;
                         resolve();
@@ -148,8 +152,8 @@ class SubdivxOrigin {
             return Promise.resolve(found.sort(sortFn));
         });
     }
-    search(text, tuneText) {
-        return this.lookup(text, tuneText);
+    search(meta) {
+        return this.lookup(meta);
     }
     download(sub, dest) {
         return null;

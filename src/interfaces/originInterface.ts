@@ -5,7 +5,7 @@ interface OriginInterface {
   readonly authRequired: boolean;
   authenticate?(): Promise<any>;
   logout?(data: AuthDataInterface): Promise<any>;
-  search(text: String, tuneText?: String):  Promise<Sub[]>;
+  search(meta):  Promise<Sub[]>;
   download(sub, dest): Promise<any>;
 }
 

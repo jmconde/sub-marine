@@ -1,17 +1,43 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const opensubtitle_auth_1 = require("./opensubtitle-auth");
-const xml2js_1 = require("xml2js");
-const axios_1 = require("axios");
+const opensubtitlesManager_1 = require("./opensubtitlesManager");
 class OpenSubtitlesOrigin {
     constructor(username, password, lang, agent) {
         this.ENDPOINT = 'https://api.opensubtitles.org/xml-rpc';
         this.authRequired = true;
         this.setAuthData(username, password, lang, agent);
-        this.authenticated = false;
+        this.manager = new opensubtitlesManager_1.default(this.auth);
     }
-    search(text, tuneText) {
-        return Promise.reject('Error xxx');
+    search(meta) {
+        var normalize = num => new String(100 + num).substring(1);
+        return new Promise((resolve, reject) => {
+            this.manager.call('SearchSubtitles', [{ sublanguageid: 'spa', imdbid: meta.imdbID.substring(2) }])
+                .then(response => {
+                if (response.status === '200 OK') {
+                    resolve(response.data.map(d => {
+                        var sub = {
+                            description: '',
+                            rating: Number(d.MovieImdbRating),
+                            downloads: Number(d.SubDownloadsCnt),
+                            format: d.InfoFormat,
+                            uploader: d.UserID,
+                            group: d.InfoReleaseGroup,
+                            dateUpload: new Date(d.SubAddDate),
+                            url: d.ZipDownloadLink,
+                            lang: d.ISO639,
+                            score: 0,
+                            meta: meta,
+                            origin: 'opensubtitles.org'
+                        };
+                        return sub;
+                    }));
+                }
+                else {
+                    reject(response.status);
+                }
+            }).catch(err => reject(err));
+        });
     }
     download(sub, dest) {
         return Promise.reject('Error');
@@ -24,23 +50,11 @@ class OpenSubtitlesOrigin {
             Promise.reject('No auth data.');
             return;
         }
-        return new Promise((resolve, reject) => {
-            var builder = new xml2js_1.Builder();
-            var reqXml = builder.buildObject(this.auth.getAuthData());
-            axios_1.default.post(this.ENDPOINT, reqXml, {
-                headers: { 'Content-Type': 'text/xml' }
-            }).then(res => {
-                var parser = new xml2js_1.Parser();
-                parser.parseString(res.data, (err, result) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    console.dir(result);
-                    this.authenticated = true;
-                    resolve();
-                });
-            });
+        return this.manager.call('LogIn', this.auth.getAuthData(), true)
+            .then(data => {
+            this.auth.authenticated = true;
+            this.auth.token = data.token;
+            this.auth.setRaw(data);
         });
     }
 }

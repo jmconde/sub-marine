@@ -1,3 +1,4 @@
+import Metadata from "./metadata";
 
 interface Sub {
   description:String;
@@ -9,7 +10,9 @@ interface Sub {
   url: String;
   lang: String;
   score: Number,
-  title: String
+  origin?: string,
+  group?: string,
+  meta: Metadata
 }
 
 export default Sub;

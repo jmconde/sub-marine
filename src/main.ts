@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import * as del from 'del';
 import { createWriteStream } from 'fs';
+import { normalize } from 'path';
 import * as request from 'request';
 
 import Commons from './commons';
@@ -14,7 +15,7 @@ class SubMarine {
     SUBDIVX: 'subdivx'
   };
 
-  get(originType: String, textToSearch: String, tuneText?: String): Promise<Sub[]> {
+  get(originType: String, filepath: string): Promise<Sub[]> {
     let origin: OriginInterface = OriginFactory.getOrigin(originType);
     let promise: Promise<any> = Promise.resolve();
 
@@ -22,7 +23,10 @@ class SubMarine {
       promise = promise.then(() => origin.authenticate())
     }
 
-    return promise.then(() => origin.search(textToSearch, tuneText));
+    promise = promise.then(() => Commons.getMetaDataFromFilename(normalize(filepath)))
+    promise = promise.then((meta) => Commons.getMetadataFromOMDB(meta))
+
+    return promise.then((meta) => origin.search(meta));
   }
 
   download(sub: Sub, path: string = './'): Promise<void> {

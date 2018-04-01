@@ -1,4 +1,5 @@
 export default interface AuthDataInterface {
-  token?: string;
+  token: string;
+  authenticated: boolean;
   getAuthData(): any;
 }

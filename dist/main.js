@@ -3,17 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chalk_1 = require("chalk");
 const del = require("del");
 const fs_1 = require("fs");
+const path_1 = require("path");
 const request = require("request");
 const commons_1 = require("./commons");
 const factory_1 = require("./factory");
 class SubMarine {
-    get(originType, textToSearch, tuneText) {
+    get(originType, filepath) {
         let origin = factory_1.default.getOrigin(originType);
         let promise = Promise.resolve();
         if (origin.authRequired) {
             promise = promise.then(() => origin.authenticate());
         }
-        return promise.then(() => origin.search(textToSearch, tuneText));
+        promise = promise.then(() => commons_1.default.getMetaDataFromFilename(path_1.normalize(filepath)));
+        promise = promise.then((meta) => commons_1.default.getMetadataFromOMDB(meta));
+        return promise.then((meta) => origin.search(meta));
     }
     download(sub, path = './') {
         var date = new Date().getTime();

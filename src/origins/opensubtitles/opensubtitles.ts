@@ -1,24 +1,49 @@
-import OriginInterface from "../../interfaces/originInterface";
-import Sub from "../../interfaces/subInterface";
-import AuthDataInterface from "../../interfaces/authdataInterface";
-import OpenSubtitleAuth from "./opensubtitle-auth";
-
-import { Builder, Parser } from "xml2js";
-import Axios from "axios";
+import Metadata from '../../interfaces/metadata';
+import OriginInterface from '../../interfaces/originInterface';
+import Sub from '../../interfaces/subInterface';
+import OpenSubtitleAuth from './opensubtitle-auth';
+import OpensubtitlesManager from './opensubtitlesManager';
 
 export default class OpenSubtitlesOrigin implements OriginInterface {
-  private auth: AuthDataInterface;
+  private auth: OpenSubtitleAuth;
   private readonly ENDPOINT: string = 'https://api.opensubtitles.org/xml-rpc';
   readonly authRequired = true;
   private authenticated: boolean;
+  private manager: OpensubtitlesManager;
 
   constructor(username: string, password: string, lang: string, agent: string) {
     this.setAuthData(username, password, lang, agent);
-    this.authenticated = false;
+    this.manager = new OpensubtitlesManager(this.auth);
   }
 
-  search(text: String, tuneText?: String):  Promise<Sub[]> {
-    return Promise.reject('Error xxx');
+  search(meta: Metadata):  Promise<Sub[]> {
+    var normalize = num => new String (100 + num).substring(1);
+    return new Promise<Sub[]>((resolve, reject) => {
+      this.manager.call('SearchSubtitles', [{sublanguageid: 'spa', imdbid: meta.imdbID.substring(2)}])
+        .then(response => {
+          if (response.status === '200 OK') {
+            resolve(response.data.map(d => {
+              var sub: Sub = {
+                description: '',
+                rating: Number(d.MovieImdbRating),
+                downloads: Number(d.SubDownloadsCnt),
+                format: d.InfoFormat,
+                uploader: d.UserID,
+                group: d.InfoReleaseGroup,
+                dateUpload: new Date(d.SubAddDate),
+                url: d.ZipDownloadLink,
+                lang: d.ISO639,
+                score: 0,
+                meta: meta,
+                origin: 'opensubtitles.org'
+              };
+              return sub;
+            }));
+          } else {
+            reject(response.status)
+          }
+        }).catch(err => reject(err));
+    });
   }
 
   download(sub, dest): Promise<any> {
@@ -35,25 +60,11 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
       return;
     }
 
-    return new Promise<any>((resolve, reject) => {
-      var builder = new Builder();
-        var reqXml = builder.buildObject(this.auth.getAuthData());
-
-        Axios.post(this.ENDPOINT, reqXml, {
-          headers: {'Content-Type': 'text/xml'}
-        }).then(res => {
-          var parser = new Parser();
-
-          parser.parseString(res.data, (err, result) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            console.dir(result);
-            this.authenticated = true;
-            resolve();
-          });
-        })
-    });
+    return this.manager.call('LogIn', this.auth.getAuthData(), true)
+      .then(data => {
+        this.auth.authenticated = true;
+        this.auth.token = data.token;
+        this.auth.setRaw(data);
+      });
   }
 }

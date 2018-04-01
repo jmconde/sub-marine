@@ -1,25 +1,37 @@
 import chalk from 'chalk';
 import * as commander from 'commander';
+import * as glob from 'glob';
 import { prompt } from 'inquirer';
+import { normalize, sep } from 'path';
 
 import Sub from './interfaces/subInterface';
 import SubMarine from './main';
 import TYPES from './origins/origin-types';
+
+const FILES =  {
+  type: 'input',
+  name: 'path',
+  message: 'Media files path:',
+  default: 'd:\\downloads'
+};
 
 const OPTIONS = [{
   type: 'list',
   name: 'origin',
   message: 'Select a choice:',
   choices: [{name: 'SubDivX', value: TYPES.ORIGIN.SUBDIVX}, {name: 'OpenSubtitles', value: TYPES.ORIGIN.OPEN_SUBTITLES}]
-}, {
-  type: 'input',
-  name: 'title',
-  message: 'Title to search:'
-}, {
-  type: 'input',
-  name: 'tune',
-  message: 'Additional text to search:'
 }];
+
+const fileOpts = files => {
+ return {
+  type: 'list',
+    name: 'file',
+    message: `Select a file to download: [${files.length} Found]`,
+    choices: files.map((file: string, i: number) => {
+      return {name: file.substring(file.lastIndexOf(sep) + 1) , value: file}
+    })
+ };
+}
 
 const subOptions = subs => {
   return {
@@ -27,7 +39,7 @@ const subOptions = subs => {
     name: 'sub',
     message: `Select a sub to download: [${subs.length} Found]`,
     choices: subs.map((sub: Sub) => {
-      return {name: `${sub.title} (Score: ${sub.score})`, value: sub}
+      return {name: `${sub.meta.search} (Score: ${sub.score})`, value: sub}
     })
   }
 };
@@ -38,39 +50,40 @@ const AGAIN = {
   message: 'Do you want search again?'
 }
 
-async function searchCycle(): Promise<void> {
+async function searchCycle(files: string[]): Promise<void> {
   var finished = false;
   var submarine = new SubMarine();
 
   while (!finished) {
     await new Promise<void>((resolve, reject) => {
-
-      prompt(OPTIONS).then(answers => {
-        submarine.get(answers.origin, answers.title, answers.tune)
-          .then(subs => {
-            if (subs && subs.length) {
-              prompt(subOptions(subs)).then(subSelection => {
-                submarine.download(subSelection.sub)
-                  .then(() => {
-                    prompt(AGAIN).then(again => {
-                      again.confirm ? resolve() : reject();
+      prompt(fileOpts(files)).then(choice => {
+        prompt(OPTIONS).then(answers => {
+          submarine.get(answers.origin, choice.file)
+            .then(subs => {
+              if (subs && subs.length) {
+                prompt(subOptions(subs)).then(subSelection => {
+                  submarine.download(subSelection.sub)
+                    .then(() => {
+                      prompt(AGAIN).then(again => {
+                        again.confirm ? resolve() : reject();
+                      })
                     })
-                  })
-                  .catch(() => {
-                    console.log(chalk.red('Error!'));
-                    prompt(AGAIN).then(again => {
-                      again.confirm ? resolve() : reject();
-                    });
-                  })
-              });
-            } else {
-              console.log(chalk.yellow('Not subs were found.'));
-              prompt(AGAIN).then(again => {
-                again.confirm ? resolve() : reject();
-              });
-            }
-          })
-      })
+                    .catch(() => {
+                      console.log(chalk.red('Error!'));
+                      prompt(AGAIN).then(again => {
+                        again.confirm ? resolve() : reject();
+                      });
+                    })
+                });
+              } else {
+                console.log(chalk.yellow('Not subs were found.'));
+                prompt(AGAIN).then(again => {
+                  again.confirm ? resolve() : reject();
+                });
+              }
+            })
+        })
+      });
     });
   }
 
@@ -86,11 +99,30 @@ commander
   .alias('s')
   .description('Search')
   .action(() => {
-     searchCycle()
-      .catch(() => {
-        console.log(chalk.gray(`Thanks for using ${chalk.white('SubMarine')}.`));
-        process.exit(0);
-      });
+    prompt(FILES).then(sel => {
+      console.log(normalize(`${sel.path}/**/*.mkv`));
+      glob(normalize(`${sel.path}/**/*.mkv`), {}, function (err, files) {
+        if (err) {
+          console.log(err);
+          process.exit(1);
+        }
+
+        files = files.map(d => normalize(d));
+
+        searchCycle(files)
+          .catch(() => {
+            console.log(chalk.gray(`Thanks for using ${chalk.white('SubMarine')}.`));
+            process.exit(0);
+          });
+          // files is an array of filenames.
+          // If the `nonull` option is set, and nothing
+          // was found, then files is ["**/*.js"]
+          // er is an error object or null.
+      })
+    });
+
+
+
   });
 
 commander.parse(process.argv);
