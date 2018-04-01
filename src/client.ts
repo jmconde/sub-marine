@@ -58,7 +58,7 @@ async function searchCycle(files: string[]): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       prompt(fileOpts(files)).then(choice => {
         prompt(OPTIONS).then(answers => {
-          submarine.get(answers.origin, choice.file)
+          submarine.get(answers.origin, choice.file, [])
             .then(subs => {
               if (subs && subs.length) {
                 prompt(subOptions(subs)).then(subSelection => {

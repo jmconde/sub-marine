@@ -12,7 +12,7 @@ class OpenSubtitlesOrigin {
     search(meta) {
         var normalize = num => new String(100 + num).substring(1);
         return new Promise((resolve, reject) => {
-            this.manager.call('SearchSubtitles', [{ sublanguageid: 'spa', imdbid: meta.imdbID.substring(2) }])
+            this.manager.call('SearchSubtitles', [{ sublanguageid: 'spa, eng', imdbid: meta.imdbID.substring(2) }])
                 .then(response => {
                 if (response.status === '200 OK') {
                     resolve(response.data.map(d => {

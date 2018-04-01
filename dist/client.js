@@ -60,7 +60,7 @@ function searchCycle(files) {
             yield new Promise((resolve, reject) => {
                 inquirer_1.prompt(fileOpts(files)).then(choice => {
                     inquirer_1.prompt(OPTIONS).then(answers => {
-                        submarine.get(answers.origin, choice.file)
+                        submarine.get(answers.origin, choice.file, [])
                             .then(subs => {
                             if (subs && subs.length) {
                                 inquirer_1.prompt(subOptions(subs)).then(subSelection => {

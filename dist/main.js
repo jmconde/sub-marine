@@ -8,7 +8,7 @@ const request = require("request");
 const commons_1 = require("./commons");
 const factory_1 = require("./factory");
 class SubMarine {
-    get(originType, filepath) {
+    get(originType, filepath, langs) {
         let origin = factory_1.default.getOrigin(originType);
         let promise = Promise.resolve();
         if (origin.authRequired) {
@@ -16,7 +16,7 @@ class SubMarine {
         }
         promise = promise.then(() => commons_1.default.getMetaDataFromFilename(path_1.normalize(filepath)));
         promise = promise.then((meta) => commons_1.default.getMetadataFromOMDB(meta));
-        return promise.then((meta) => origin.search(meta));
+        return promise.then((meta) => origin.search(meta, langs));
     }
     download(sub, path = './') {
         var date = new Date().getTime();

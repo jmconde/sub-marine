@@ -3,6 +3,7 @@ import OriginInterface from '../../interfaces/originInterface';
 import Sub from '../../interfaces/subInterface';
 import OpenSubtitleAuth from './opensubtitle-auth';
 import OpensubtitlesManager from './opensubtitlesManager';
+import chalk from 'chalk';
 
 export default class OpenSubtitlesOrigin implements OriginInterface {
   private auth: OpenSubtitleAuth;
@@ -19,7 +20,8 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
   search(meta: Metadata):  Promise<Sub[]> {
     var normalize = num => new String (100 + num).substring(1);
     return new Promise<Sub[]>((resolve, reject) => {
-      this.manager.call('SearchSubtitles', [{sublanguageid: 'spa', imdbid: meta.imdbID.substring(2)}])
+      console.log(chalk.gray('Searching for ... ') + chalk.yellow(meta.search.toString()));
+      this.manager.call('SearchSubtitles', [{sublanguageid: 'spa, eng', imdbid: meta.imdbID.substring(2)}])
         .then(response => {
           if (response.status === '200 OK') {
             resolve(response.data.map(d => {
