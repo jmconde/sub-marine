@@ -1,5 +1,5 @@
-# <img alt="SubMarine" src="https://raw.githubusercontent.com/jmconde/samples/master/submarine.svg?sanitize=true" width="50" height="50" /> SubMarine
-`v0.1.0`
+# <img alt="SubMarine" src="https://raw.githubusercontent.com/jmconde/samples/master/submarine.svg?sanitize=true" width="50" height="50" style="float: left;margin-right: 10px;margin-top: -8px;" /> SubMarine
+`v0.1.1`
 
 
 Is not just another subtitle downloader, SubMarine intends to provide a common interface to download subtitle from different sources.
