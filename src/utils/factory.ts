@@ -1,7 +1,7 @@
-import OriginInterface from './interfaces/originInterface';
-import SubdivxOrigin from './origins/subdivx/subdivx';
-import OpenSubtitlesOrigin from './origins/opensubtitles/opensubtitles';
-import TYPES from './origins/origin-types';
+import OriginInterface from '../interfaces/originInterface';
+import SubdivxOrigin from '../origins/subdivx/subdivx';
+import OpenSubtitlesOrigin from '../origins/opensubtitles/opensubtitles';
+import TYPES from './origin-types';
 
 
 class OriginFactory {

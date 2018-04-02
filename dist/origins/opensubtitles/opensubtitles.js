@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const opensubtitle_auth_1 = require("./opensubtitle-auth");
 const opensubtitlesManager_1 = require("./opensubtitlesManager");
+const chalk_1 = require("chalk");
 class OpenSubtitlesOrigin {
     constructor(username, password, lang, agent) {
         this.ENDPOINT = 'https://api.opensubtitles.org/xml-rpc';
@@ -12,6 +13,7 @@ class OpenSubtitlesOrigin {
     search(meta) {
         var normalize = num => new String(100 + num).substring(1);
         return new Promise((resolve, reject) => {
+            console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(meta.search.toString()));
             this.manager.call('SearchSubtitles', [{ sublanguageid: 'spa, eng', imdbid: meta.imdbID.substring(2) }])
                 .then(response => {
                 if (response.status === '200 OK') {

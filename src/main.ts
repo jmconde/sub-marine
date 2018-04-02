@@ -4,8 +4,8 @@ import { createWriteStream } from 'fs';
 import { normalize } from 'path';
 import * as request from 'request';
 
-import Commons from './commons';
-import OriginFactory from './factory';
+import Commons from './utils/commons';
+import OriginFactory from './utils/factory';
 import OriginInterface from './interfaces/originInterface';
 import Sub from './interfaces/subInterface';
 

@@ -6,11 +6,12 @@ import * as unrar from 'node-unrar-js';
 import { sep } from 'path';
 import * as unzip from 'unzip';
 
-import Metadata from './interfaces/metadata';
-import Sub from './interfaces/subInterface';
+import Metadata from '../interfaces/metadata';
+import Sub from '../interfaces/subInterface';
 
 export default class Commons {
   static REGEX = {
+    TOKENIZE: /([a-zA-Z0-9\[\]\(\)]{2,}|([a-zA-Z0-9]\.)+)/g,
     SEASON_EPISODE: /[s|S]\d{2}[e|E]\d{2}/,
     SEASON_EPISODE_OTHER: /\d{1,2}x\d{1,2}/,
     YEAR: /(\.|\s|\()\d{4}(\.|\s|\))/
@@ -95,6 +96,10 @@ export default class Commons {
 
   }
 
+  static async getMetadataFromTMDb(meta: Metadata): Promise<Metadata> {
+    return Promise.reject('Not implemented');
+  }
+
   static async getMetadataFromOMDB(meta: Metadata): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from OMDB...'));
     return new Promise<Metadata>((resolve, reject) => {
@@ -142,7 +147,32 @@ export default class Commons {
     })
   }
 
+  static tokenize(filepath: string): RegExpMatchArray {
+    return filepath.match(this.REGEX.TOKENIZE).map(token => token.replace(/\./g, ' ').trim().replace(/\s/g, '.'));
+  }
+
+  static getFilename (filepath: string) {
+    return filepath.substring(filepath.lastIndexOf(sep) + 1);
+  }
+
+  static getTitle(tokens: RegExpMatchArray): string {
+    var title: string[] = [];
+
+    for (let index = 0; index < tokens.length; index++) {
+      const token: string = tokens[index];
+      if (this.REGEX.SEASON_EPISODE.test(token)) {
+        break;
+      }
+      title.push(token);
+    }
+
+    return title.join(' ');
+  }
+
   static async getMetaDataFromFilename(filepath: string): Promise<Metadata> {
+    var tokens = this.tokenize(this.getFilename(filepath));
+
+    console.log(this.getTitle(tokens));
     console.log(chalk.grey("getting Metadata from filename..."));
     return new Promise<Metadata>((resolve, reject) => {
       var type: string = 'movie';

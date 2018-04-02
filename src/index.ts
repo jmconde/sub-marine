@@ -1,5 +1,5 @@
 import SubMarine from './main';
-import TYPES from './origins/origin-types';
+import TYPES from './utils/origin-types';
 
 var submarine = new SubMarine();
 // var filename = 'd:/downloads/Black.Lightning.S01E10.720p.HDTV.x264-worldmkv[eztv].mkv';

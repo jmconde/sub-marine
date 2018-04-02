@@ -88,6 +88,11 @@ class Commons {
             }
         });
     }
+    static getMetadataFromTMDb(meta) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return Promise.reject('Not implemented');
+        });
+    }
     static getMetadataFromOMDB(meta) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(chalk_1.default.grey('getting metadata from OMDB...'));
@@ -133,8 +138,27 @@ class Commons {
             });
         });
     }
+    static tokenize(filepath) {
+        return filepath.match(this.REGEX.TOKENIZE).map(token => token.replace(/\./g, ' ').trim().replace(/\s/g, '.'));
+    }
+    static getFilename(filepath) {
+        return filepath.substring(filepath.lastIndexOf(path_1.sep) + 1);
+    }
+    static getTitle(tokens) {
+        var title = [];
+        for (let index = 0; index < tokens.length; index++) {
+            const token = tokens[index];
+            if (this.REGEX.SEASON_EPISODE.test(token)) {
+                break;
+            }
+            title.push(token);
+        }
+        return title.join(' ');
+    }
     static getMetaDataFromFilename(filepath) {
         return __awaiter(this, void 0, void 0, function* () {
+            var tokens = this.tokenize(this.getFilename(filepath));
+            console.log(this.getTitle(tokens));
             console.log(chalk_1.default.grey("getting Metadata from filename..."));
             return new Promise((resolve, reject) => {
                 var type = 'movie';

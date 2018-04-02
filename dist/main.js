@@ -5,8 +5,8 @@ const del = require("del");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const request = require("request");
-const commons_1 = require("./commons");
-const factory_1 = require("./factory");
+const commons_1 = require("./utils/commons");
+const factory_1 = require("./utils/factory");
 class SubMarine {
     get(originType, filepath, langs) {
         let origin = factory_1.default.getOrigin(originType);

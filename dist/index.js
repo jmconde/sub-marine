@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const main_1 = require("./main");
-const origin_types_1 = require("./origins/origin-types");
+const origin_types_1 = require("./utils/origin-types");
 var submarine = new main_1.default();
 // var filename = 'd:/downloads/Black.Lightning.S01E10.720p.HDTV.x264-worldmkv[eztv].mkv';
 // var filename =  'd:/downloads/Gotham.S04E16.720p.HDTV.x264-worldmkv[eztv].mkv';

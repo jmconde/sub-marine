@@ -4,9 +4,9 @@ import * as glob from 'glob';
 import { prompt } from 'inquirer';
 import { normalize, sep } from 'path';
 
-import Sub from './interfaces/subInterface';
-import SubMarine from './main';
-import TYPES from './origins/origin-types';
+import Sub from '../interfaces/subInterface';
+import SubMarine from '../main';
+import TYPES from '../utils/origin-types';
 
 const FILES =  {
   type: 'input',
