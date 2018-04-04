@@ -8,13 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const axios_1 = require("axios");
 const chalk_1 = require("chalk");
 const fs_1 = require("fs");
 const fs_extra_1 = require("fs-extra");
 const unrar = require("node-unrar-js");
 const path_1 = require("path");
 const unzip = require("unzip");
+const OMDBManager_1 = require("../managers/OMDBManager");
 class Commons {
     static getFileBaseTitle(sub, filename, index = 0) {
         var indexStr = index > 0 ? `.${index}` : '';
@@ -96,46 +96,20 @@ class Commons {
     static getMetadataFromOMDB(meta) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(chalk_1.default.grey('getting metadata from OMDB...'));
-            return new Promise((resolve, reject) => {
-                var type = meta.type === 'movie' ? 'movie' : 'series';
-                axios_1.default.get(`http://www.omdbapi.com/?t=${encodeURIComponent(meta.title)}&apikey=6917d31e&type=${type}`)
-                    .then(response => {
-                    var data = response.data;
-                    if (data.Error) {
-                        reject('OMDb: ' + data.Error);
-                    }
-                    if (meta.type === 'movie') {
-                        meta.year = data.Year;
-                        meta.rated = data.Rated;
-                        meta.imdbID = data.imdbID;
-                        meta.plot = data.Plot;
-                        meta.runtime = data.Runtime;
-                        meta.search = Commons.getSearchText(meta);
-                        resolve(meta);
-                    }
-                    else {
-                        axios_1.default.get(`http://www.omdbapi.com/?t=${encodeURIComponent(meta.title)}&apikey=6917d31e&type=episode&Season=${meta.season}&Episode=${meta.episode}`)
-                            .then(episodeResponse => {
-                            var episodeData = episodeResponse.data;
-                            if (episodeData.Error) {
-                                reject('OMDb: Episode not found!');
-                            }
-                            meta.year = episodeData.Year;
-                            meta.episodeTitle = episodeData.Title;
-                            meta.rated = episodeData.Rated;
-                            meta.imdbID = episodeData.imdbID;
-                            meta.seriesID = episodeData.seriesID;
-                            meta.plot = episodeData.Plot;
-                            meta.runtime = episodeData.Runtime;
-                            meta.search = Commons.getSearchText(meta);
-                            resolve(meta);
-                        });
-                    }
-                })
-                    .catch((err) => {
-                    reject(err);
-                });
-            });
+            var manager = new OMDBManager_1.default();
+            var promise;
+            console.log(meta.type);
+            if (meta.type === 'movie') {
+                promise = manager.getMovie(meta);
+            }
+            else if (meta.type === 'series') {
+                promise = manager.getSeries(meta)
+                    .then(meta => manager.getEpisode(meta));
+            }
+            else {
+                Promise.reject('No type');
+            }
+            return promise;
         });
     }
     static tokenize(filepath) {
@@ -158,8 +132,6 @@ class Commons {
     static getMetaDataFromFilename(filepath) {
         return __awaiter(this, void 0, void 0, function* () {
             var tokens = this.tokenize(this.getFilename(filepath));
-            console.log(this.getTitle(tokens));
-            console.log(chalk_1.default.grey("getting Metadata from filename..."));
             return new Promise((resolve, reject) => {
                 var type = 'movie';
                 var matcher, data, season, episode, title, year, filename;
@@ -182,7 +154,7 @@ class Commons {
                     episode = Number(data.substring(4));
                 }
                 else {
-                    year = matcher[0];
+                    year = matcher[0].replace(/\.|\(\)/g, ' ').trim();
                 }
                 var meta = {
                     title,
@@ -193,6 +165,8 @@ class Commons {
                     episode,
                     year
                 };
+                meta.search = Commons.getSearchText(meta);
+                console.log(meta);
                 resolve(meta);
             });
         });

@@ -19,7 +19,7 @@ const FILES = {
     type: 'input',
     name: 'path',
     message: 'Media files path:',
-    default: 'd:\\downloads'
+    default: 'd:\\downloads\\test'
 };
 const OPTIONS = [{
         type: 'list',
@@ -43,7 +43,7 @@ const subOptions = subs => {
         name: 'sub',
         message: `Select a sub to download: [${subs.length} Found]`,
         choices: subs.map((sub) => {
-            return { name: `${sub.meta.search} (Score: ${sub.score})`, value: sub };
+            return { name: `${sub.meta.filename} ${sub.lang} (Score: ${sub.score})`, value: sub };
         })
     };
 };
@@ -101,8 +101,8 @@ commander
     .description('Search')
     .action(() => {
     inquirer_1.prompt(FILES).then(sel => {
-        console.log(path_1.normalize(`${sel.path}/**/*.mkv`));
-        glob(path_1.normalize(`${sel.path}/**/*.mkv`), {}, function (err, files) {
+        console.log(path_1.normalize(`${sel.path}/**/*.{avi,mp4,mkv,webm}`));
+        glob(path_1.normalize(`${sel.path}/**/*.{avi,mp4,mkv,webm}`), {}, function (err, files) {
             if (err) {
                 console.log(err);
                 process.exit(1);

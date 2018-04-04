@@ -1,4 +1,3 @@
-import Axios from 'axios';
 import chalk from 'chalk';
 import { appendFileSync, createReadStream, createWriteStream, readFileSync } from 'fs';
 import { pathExistsSync } from 'fs-extra';
@@ -8,6 +7,7 @@ import * as unzip from 'unzip';
 
 import Metadata from '../interfaces/metadata';
 import Sub from '../interfaces/subInterface';
+import OMDBManager from '../managers/OMDBManager';
 
 export default class Commons {
   static REGEX = {
@@ -102,49 +102,19 @@ export default class Commons {
 
   static async getMetadataFromOMDB(meta: Metadata): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from OMDB...'));
-    return new Promise<Metadata>((resolve, reject) => {
-      var type = meta.type === 'movie' ? 'movie' : 'series';
-      Axios.get(`http://www.omdbapi.com/?t=${encodeURIComponent(meta.title)}&apikey=6917d31e&type=${type}`)
-        .then(response => {
-          var data = response.data;
+    var manager = new OMDBManager();
+    var promise;
+    console.log(meta.type);
+    if (meta.type === 'movie') {
+      promise = manager.getMovie(meta);
+    } else if (meta.type === 'series') {
+      promise = manager.getSeries(meta)
+        .then(meta => manager.getEpisode(meta));
+    } else {
+      Promise.reject<Metadata>('No type');
+    }
 
-          if (data.Error) {
-            reject('OMDb: ' + data.Error);
-          }
-
-          if (meta.type === 'movie') {
-            meta.year = data.Year;
-            meta.rated = data.Rated;
-            meta.imdbID = data.imdbID;
-            meta.plot = data.Plot;
-            meta.runtime = data.Runtime;
-            meta.search = Commons.getSearchText(meta);
-            resolve(meta);
-          } else {
-            Axios.get(`http://www.omdbapi.com/?t=${encodeURIComponent(meta.title)}&apikey=6917d31e&type=episode&Season=${meta.season}&Episode=${meta.episode}`)
-              .then(episodeResponse => {
-                var episodeData = episodeResponse.data;
-
-                if (episodeData.Error) {
-                  reject('OMDb: Episode not found!');
-                }
-
-                meta.year = episodeData.Year;
-                meta.episodeTitle = episodeData.Title;
-                meta.rated = episodeData.Rated;
-                meta.imdbID = episodeData.imdbID;
-                meta.seriesID = episodeData.seriesID;
-                meta.plot = episodeData.Plot;
-                meta.runtime = episodeData.Runtime;
-                meta.search = Commons.getSearchText(meta);
-                resolve(meta);
-              });
-          }
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    })
+    return promise;
   }
 
   static tokenize(filepath: string): RegExpMatchArray {
@@ -172,8 +142,6 @@ export default class Commons {
   static async getMetaDataFromFilename(filepath: string): Promise<Metadata> {
     var tokens = this.tokenize(this.getFilename(filepath));
 
-    console.log(this.getTitle(tokens));
-    console.log(chalk.grey("getting Metadata from filename..."));
     return new Promise<Metadata>((resolve, reject) => {
       var type: string = 'movie';
       var matcher: RegExpMatchArray,
@@ -202,7 +170,7 @@ export default class Commons {
         season = Number(data.substring(1, 3));
         episode = Number(data.substring(4));
       } else {
-        year = matcher[0];
+        year = matcher[0].replace(/\.|\(\)/g, ' ').trim();
       }
 
       var meta: Metadata = {
@@ -214,6 +182,10 @@ export default class Commons {
         episode,
         year
       };
+
+      meta.search = Commons.getSearchText(meta);
+
+      console.log(meta);
 
       resolve(meta);
     });

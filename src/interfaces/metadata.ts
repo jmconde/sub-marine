@@ -1,6 +1,8 @@
+import Sub from "./subInterface";
+
 export default interface Metadata {
-  title: string;
-  type: string;
+  title?: string;
+  type?: string;
   season?: number,
   episode?: number
   episodeTitle?: string;
@@ -14,5 +16,5 @@ export default interface Metadata {
   path?: string;
   filename?: string;
   runtime?: string;
-  search?: string;
+  search?: string
 }
