@@ -91,6 +91,7 @@ class SubdivxOrigin {
                     var url = $a.eq(2).attr('href');
                     var score = this.getScore(title + ' ' + description + ' ' + format, meta.search);
                     var lang = 'es';
+                    var origin = 'SubDivX';
                     sub = {
                         description,
                         rating,
@@ -101,7 +102,8 @@ class SubdivxOrigin {
                         url,
                         score,
                         lang,
-                        meta
+                        meta,
+                        origin
                     };
                     subs.push(sub);
                 });

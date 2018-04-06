@@ -1,24 +1,60 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = require("http");
 const querystring_1 = require("querystring");
-const URI = require("urijs");
+const uriTemplate = require("uri-templates");
 class Manager {
-    get(options, meta) {
-        console.log('In OMDBManager getMovie');
-        return this.makeRequest(this.getUrl(options), 'get', meta);
+    get(path = '', query, meta) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('In OMDBManager getMovie');
+            return this.makeRequest(this.getUrl(query, path), 'get', meta)
+                .then(json => this.mapper(json, meta));
+        });
+    }
+    list(path = '', query, meta) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.makeRequest(this.getUrl(query, path), 'get', meta)
+                .then(json => {
+                if (this.LIST_DATA_PATH) {
+                    json = json[this.LIST_DATA_PATH];
+                }
+                return json.map(d => this.mapper(d, meta));
+            });
+        });
     }
     getToken(tokenId) {
         var tokens = {
-            omdb: '6917d31e',
-            tmdb: 'e03b8ee55f0715ceef0a188e53ad593d'
+            omdb: {
+                name: 'apiKey',
+                token: '6917d31e'
+            },
+            tmdb: {
+                name: 'api_key',
+                token: 'e03b8ee55f0715ceef0a188e53ad593d'
+            }
         };
         return tokens[tokenId];
     }
-    getUrl(options) {
-        var uri = new URI(this.URL);
-        uri.query(options);
-        return uri.toString();
+    getUrl(query, path = '') {
+        var token;
+        query = query || {};
+        if (this.API_KEY) {
+            token = this.getToken(this.API_KEY);
+            query[token.name] = token.token;
+        }
+        return new uriTemplate(this.URL + path + '{?params*}').fillFromObject({ params: query });
+        ;
+    }
+    getPath(path, data) {
+        return new uriTemplate(path).fill(data);
     }
     makeRequest(url, method = 'get', meta, body) {
         // var options = new URL(url);
@@ -33,7 +69,7 @@ class Manager {
                 });
                 res.on('end', () => {
                     var json = JSON.parse(data.join(''));
-                    resolve(this.mapper(json, meta));
+                    resolve(json);
                 });
             });
             req.on('error', (e) => {

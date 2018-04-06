@@ -8,6 +8,7 @@ import * as unzip from 'unzip';
 import Metadata from '../interfaces/metadata';
 import Sub from '../interfaces/subInterface';
 import OMDBManager from '../managers/OMDBManager';
+import TMDbManager from '../managers/TMDbManager';
 
 export default class Commons {
   static REGEX = {
@@ -94,27 +95,6 @@ export default class Commons {
       }
     });
 
-  }
-
-  static async getMetadataFromTMDb(meta: Metadata): Promise<Metadata> {
-    return Promise.reject('Not implemented');
-  }
-
-  static async getMetadataFromOMDB(meta: Metadata): Promise<Metadata> {
-    console.log(chalk.grey('getting metadata from OMDB...'));
-    var manager = new OMDBManager();
-    var promise;
-    console.log(meta.type);
-    if (meta.type === 'movie') {
-      promise = manager.getMovie(meta);
-    } else if (meta.type === 'series') {
-      promise = manager.getSeries(meta)
-        .then(meta => manager.getEpisode(meta));
-    } else {
-      Promise.reject<Metadata>('No type');
-    }
-
-    return promise;
   }
 
   static tokenize(filepath: string): RegExpMatchArray {

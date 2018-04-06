@@ -7,7 +7,13 @@ const path_1 = require("path");
 const request = require("request");
 const commons_1 = require("./utils/commons");
 const factory_1 = require("./utils/factory");
+const OMDBManager_1 = require("./managers/OMDBManager");
+const TMDbManager_1 = require("./managers/TMDbManager");
 class SubMarine {
+    constructor() {
+        this.OMDB = new OMDBManager_1.default();
+        this.TMDb = new TMDbManager_1.default();
+    }
     get(originType, filepath, langs) {
         let origin = factory_1.default.getOrigin(originType);
         let promise = Promise.resolve();
@@ -15,7 +21,8 @@ class SubMarine {
             promise = promise.then(() => origin.authenticate());
         }
         promise = promise.then(() => commons_1.default.getMetaDataFromFilename(path_1.normalize(filepath)));
-        promise = promise.then((meta) => commons_1.default.getMetadataFromOMDB(meta));
+        promise = promise.then((meta) => this.TMDb.fill(meta));
+        // promise = promise.then((meta) => this.OMDB.fill(meta));
         return promise.then((meta) => origin.search(meta, langs));
     }
     download(sub, path = './') {

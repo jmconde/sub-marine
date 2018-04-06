@@ -8,9 +8,13 @@ import Commons from './utils/commons';
 import OriginFactory from './utils/factory';
 import OriginInterface from './interfaces/originInterface';
 import Sub from './interfaces/subInterface';
+import OMDBManager from './managers/OMDBManager';
+import TMDbManager from './managers/TMDbManager';
 
 export default class SubMarine {
   public text: string;
+  private OMDB = new OMDBManager();
+  private TMDb = new TMDbManager();
   static readonly ORIGINS = {
     SUBDIVX: 'subdivx'
   };
@@ -20,11 +24,13 @@ export default class SubMarine {
     let promise: Promise<any> = Promise.resolve();
 
     if (origin.authRequired) {
-      promise = promise.then(() => origin.authenticate())
+      promise = promise.then(() => origin.authenticate());
     }
 
-    promise = promise.then(() => Commons.getMetaDataFromFilename(normalize(filepath)))
-    promise = promise.then((meta) => Commons.getMetadataFromOMDB(meta))
+    promise = promise.then(() => Commons.getMetaDataFromFilename(normalize(filepath)));
+    promise = promise.then((meta) => this.TMDb.fill(meta));
+    // promise = promise.then((meta) => this.OMDB.fill(meta));
+
 
     return promise.then((meta) => origin.search(meta, langs));
   }

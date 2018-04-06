@@ -96,6 +96,7 @@ class SubdivxOrigin implements OriginInterface {
           var url = $a.eq(2).attr('href');
           var score = this.getScore(title + ' ' + description + ' ' + format, meta.search);
           var lang = 'es';
+          var origin = 'SubDivX'
 
 
           sub = {
@@ -108,7 +109,8 @@ class SubdivxOrigin implements OriginInterface {
             url,
             score,
             lang,
-            meta
+            meta,
+            origin
           };
 
           subs.push(sub);

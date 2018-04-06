@@ -10,11 +10,12 @@ export default interface Metadata {
   rated?: string;
   metascore?: string;
   imdbID?: string;
-  seriesID?: string;
+  id?: string;
   plot?: string;
   production?: string;
   path?: string;
   filename?: string;
+  lang?: string;
   runtime?: string;
   search?: string
 }

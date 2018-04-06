@@ -14,7 +14,6 @@ const fs_extra_1 = require("fs-extra");
 const unrar = require("node-unrar-js");
 const path_1 = require("path");
 const unzip = require("unzip");
-const OMDBManager_1 = require("../managers/OMDBManager");
 class Commons {
     static getFileBaseTitle(sub, filename, index = 0) {
         var indexStr = index > 0 ? `.${index}` : '';
@@ -86,30 +85,6 @@ class Commons {
             else {
                 reject();
             }
-        });
-    }
-    static getMetadataFromTMDb(meta) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return Promise.reject('Not implemented');
-        });
-    }
-    static getMetadataFromOMDB(meta) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log(chalk_1.default.grey('getting metadata from OMDB...'));
-            var manager = new OMDBManager_1.default();
-            var promise;
-            console.log(meta.type);
-            if (meta.type === 'movie') {
-                promise = manager.getMovie(meta);
-            }
-            else if (meta.type === 'series') {
-                promise = manager.getSeries(meta)
-                    .then(meta => manager.getEpisode(meta));
-            }
-            else {
-                Promise.reject('No type');
-            }
-            return promise;
         });
     }
     static tokenize(filepath) {
