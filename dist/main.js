@@ -23,7 +23,8 @@ class SubMarine {
         promise = promise.then(() => commons_1.default.getMetaDataFromFilename(path_1.normalize(filepath)));
         promise = promise.then((meta) => this.TMDb.fill(meta));
         // promise = promise.then((meta) => this.OMDB.fill(meta));
-        return promise.then((meta) => origin.search(meta, langs));
+        return promise.then((meta) => origin.search(meta, langs))
+            .catch(() => []);
     }
     download(sub, path = './') {
         var date = new Date().getTime();

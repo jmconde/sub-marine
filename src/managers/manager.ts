@@ -8,9 +8,12 @@ export default abstract class Manager {
   abstract URL:string;
   API_KEY?: string;
   LIST_DATA_PATH?: string;
+  static readonly REPONSE_OK = 0;
+  static readonly REPONSE_NOT_FOUND = 1;
 
-  abstract mapper(response: any, meta?: Metadata): Metadata;
+  abstract mapper(response: any): Metadata;
   abstract fill(meta: Metadata): Promise<Metadata>;
+  abstract check(json): number;
 
   async delete?(url: String): Promise<Metadata>;
   async post?(url: String, body: any): Promise<Metadata>;
@@ -20,7 +23,7 @@ export default abstract class Manager {
     console.log('In OMDBManager getMovie');
 
     return this.makeRequest(this.getUrl(query, path), 'get',  meta)
-      .then(json => this.mapper(json, meta));
+      .then(json => (this.check(json) === 0) ? this.mapper(json) : Promise.reject<Metadata>('Error ' + this.check(json)));
   }
 
   async list(path: string = '', query: any,  meta?: Metadata): Promise<Metadata[]>{
@@ -30,7 +33,7 @@ export default abstract class Manager {
           json = json[this.LIST_DATA_PATH];
         }
 
-        return json.map(d => this.mapper(d, meta))
+        return json.map(d => this.mapper(d))
       });
   }
 

@@ -7,6 +7,10 @@ export default class TMDbManager extends Manager {
   URL = 'http://api.themoviedb.org';
   LIST_DATA_PATH = 'results';
 
+  check(json): number {
+    return !json.status_code  ? 0 : 1;
+  }
+
   fill(meta: Metadata): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from TMDb...'));
 
@@ -88,12 +92,8 @@ export default class TMDbManager extends Manager {
     return this.get(this.getPath(path, pathData), {}, meta);
   }
 
-  mapper(response: any, meta: Metadata): Metadata {
-    if (!meta) {
-      meta = {};
-    } else {
-      meta = Object.assign({}, meta);
-    }
+  mapper(response: any): Metadata {
+    var meta: Metadata = {};
 
     // meta.imdbID = response.imdbID || meta.imdbID;
     // meta.runtime = response.Runtime || meta.runtime;

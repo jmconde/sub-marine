@@ -32,7 +32,8 @@ export default class SubMarine {
     // promise = promise.then((meta) => this.OMDB.fill(meta));
 
 
-    return promise.then((meta) => origin.search(meta, langs));
+    return promise.then((meta) => origin.search(meta, langs))
+      .catch(() => []);
   }
 
   download(sub: Sub, path: string = './'): Promise<void> {

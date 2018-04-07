@@ -26,6 +26,7 @@
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
     "inquirer": "^5.2.0",
+    "inquirer-path": "^1.0.0-beta5",
     "node-unrar-js": "^0.8.1",
     "npm": "^5.8.0",
     "request": "^2.85.0",

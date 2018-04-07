@@ -9,6 +9,9 @@ class TMDbManager extends manager_1.default {
         this.URL = 'http://api.themoviedb.org';
         this.LIST_DATA_PATH = 'results';
     }
+    check(json) {
+        return !json.status_code ? 0 : 1;
+    }
     fill(meta) {
         console.log(chalk_1.default.grey('getting metadata from TMDb...'));
         return this.find(meta)
@@ -80,13 +83,8 @@ class TMDbManager extends manager_1.default {
         };
         return this.get(this.getPath(path, pathData), {}, meta);
     }
-    mapper(response, meta) {
-        if (!meta) {
-            meta = {};
-        }
-        else {
-            meta = Object.assign({}, meta);
-        }
+    mapper(response) {
+        var meta = {};
         // meta.imdbID = response.imdbID || meta.imdbID;
         // meta.runtime = response.Runtime || meta.runtime;
         // if (meta.episode) {

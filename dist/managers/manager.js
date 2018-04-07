@@ -16,7 +16,7 @@ class Manager {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('In OMDBManager getMovie');
             return this.makeRequest(this.getUrl(query, path), 'get', meta)
-                .then(json => this.mapper(json, meta));
+                .then(json => (this.check(json) === 0) ? this.mapper(json) : Promise.reject('Error ' + this.check(json)));
         });
     }
     list(path = '', query, meta) {
@@ -26,7 +26,7 @@ class Manager {
                 if (this.LIST_DATA_PATH) {
                     json = json[this.LIST_DATA_PATH];
                 }
-                return json.map(d => this.mapper(d, meta));
+                return json.map(d => this.mapper(d));
             });
         });
     }
@@ -83,5 +83,7 @@ class Manager {
         });
     }
 }
+Manager.REPONSE_OK = 0;
+Manager.REPONSE_NOT_FOUND = 1;
 exports.default = Manager;
 //# sourceMappingURL=manager.js.map

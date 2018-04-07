@@ -12,14 +12,16 @@ const chalk_1 = require("chalk");
 const commander = require("commander");
 const glob = require("glob");
 const inquirer_1 = require("inquirer");
+const inquirer_path_1 = require("inquirer-path");
 const path_1 = require("path");
 const main_1 = require("../main");
 const origin_types_1 = require("../utils/origin-types");
+inquirer_1.prompt.registerPrompt('path', inquirer_path_1.PathPrompt);
 const FILES = {
-    type: 'input',
+    type: 'path',
     name: 'path',
     message: 'Media files path:',
-    default: 'd:\\downloads\\test'
+    cwd: 'd:/downloads/test'
 };
 const OPTIONS = [{
         type: 'list',

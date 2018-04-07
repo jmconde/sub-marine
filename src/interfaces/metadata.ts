@@ -1,21 +1,24 @@
 import Sub from "./subInterface";
 
 export default interface Metadata {
-  title?: string;
-  type?: string;
-  season?: number,
   episode?: number
   episodeTitle?: string;
-  year?: string;
-  rated?: string;
-  metascore?: string;
-  imdbID?: string;
-  id?: string;
-  plot?: string;
-  production?: string;
-  path?: string;
   filename?: string;
+  genre?:string;
+  id?: string;
+  imdbID?: string;
   lang?: string;
+  metascore?: string;
+  path?: string;
+  plot?: string;
+  poster?: string;
+  production?: string;
+  rated?: string;
+  released?:string;
   runtime?: string;
-  search?: string
+  search?: string;
+  season?: number,
+  title?: string;
+  type?: string;
+  year?: string;
 }

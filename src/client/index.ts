@@ -2,17 +2,20 @@ import chalk from 'chalk';
 import * as commander from 'commander';
 import * as glob from 'glob';
 import { prompt } from 'inquirer';
+import { PathPrompt } from 'inquirer-path';
 import { normalize, sep } from 'path';
 
 import Sub from '../interfaces/subInterface';
 import SubMarine from '../main';
 import TYPES from '../utils/origin-types';
 
+prompt.registerPrompt('path', PathPrompt);
+
 const FILES =  {
-  type: 'input',
+  type: 'path',
   name: 'path',
   message: 'Media files path:',
-  default: 'd:\\downloads\\test'
+  cwd: 'd:/downloads/test'
 };
 
 const OPTIONS = [{
