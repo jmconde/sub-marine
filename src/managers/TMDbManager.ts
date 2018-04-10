@@ -1,11 +1,13 @@
-import Manager from "./manager";
-import Metadata from "../interfaces/metadata";
+import ApiManager from "./apiManager";
+import Metadata from "../interfaces/metadataInterface";
 import chalk from "chalk";
+import TMDbMapper from "./mappers/TMDbMapper";
 
-export default class TMDbManager extends Manager {
-  API_KEY = 'tmdb';
+export default class TMDbManager extends ApiManager {
+  ID = 'tmdb';
   URL = 'http://api.themoviedb.org';
   LIST_DATA_PATH = 'results';
+  mapper = new TMDbMapper();
 
   check(json): number {
     return !json.status_code  ? 0 : 1;
@@ -15,35 +17,27 @@ export default class TMDbManager extends Manager {
     console.log(chalk.grey('getting metadata from TMDb...'));
 
     return this.find(meta)
+      .then(findMeta =>  Object.assign(meta, findMeta))
       .then(meta => {
         if (meta.type === 'movie') {
-          return this.getMovie(meta);
+          return this.getMovie(meta).then(movieMeta => Object.assign(meta, movieMeta));
         } else if (meta.type === 'series') {
-          return this.getEpisode(meta);
+          return this.getEpisode(meta).then(seriesMeta => Object.assign(meta, seriesMeta));
         } else {
           Promise.reject<Metadata>('No type');
         }
       });
-    // return;
-    // var promise;
-    // console.log(meta.type);
-    // if (meta.type === 'movie') {
-    //   promise = this.getMovie(meta);
-    // } else if (meta.type === 'series') {
-    //   promise = this.getSeries(meta)
-    //     .then(meta => this.getEpisode(meta));
-    // } else {
-    //   Promise.reject<Metadata>('No type');
-    // }
-
-    // return promise;
   }
 
   find(meta: Metadata): Promise<Metadata> {
-    var q = {
-      query: meta.title,
-      year: meta.year
+    var q: any = {
+      query: meta.title
     };
+
+    if (meta.year) {
+      q.year = meta.year
+    }
+
     var path = '/3/search/tv';
 
     if (meta.type === 'movie') {
@@ -59,17 +53,13 @@ export default class TMDbManager extends Manager {
   }
 
   getMovie(meta: Metadata): Promise<Metadata> {
+    console.log(meta);
     var path = '/3/movie/{movie_id}';
-    var q = {
-      query: meta.title,
-      year: meta.year
-    };
-    var path = '/3/search/tv';
-    if (meta.type === 'movie') {
-      path = '/3/search/movie'
+    var pathData = {
+      movie_id: meta.id
     }
 
-    return this.get(path, q, meta);
+    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'}, meta);
   }
 
   getSeries(meta: Metadata): Promise<Metadata> {
@@ -78,7 +68,16 @@ export default class TMDbManager extends Manager {
       tv_id: meta.id
     }
 
-    return this.get(this.getPath(path, pathData), {}, meta);
+    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'}, meta);
+  }
+
+  getExternalIds(id: string, season: number) {
+    var path = '/3/tv/{tv_id}/season/{season_number}/external_ids';
+    var pathData = {
+      tv_id: id,
+      season_number: season
+    }
+    return this.rawGet(this.getPath(path, pathData), {});
   }
 
   getEpisode(meta: Metadata): Promise<Metadata> {
@@ -89,26 +88,7 @@ export default class TMDbManager extends Manager {
       episode_number: meta.episode
     };
 
-    return this.get(this.getPath(path, pathData), {}, meta);
-  }
-
-  mapper(response: any): Metadata {
-    var meta: Metadata = {};
-
-    // meta.imdbID = response.imdbID || meta.imdbID;
-    // meta.runtime = response.Runtime || meta.runtime;
-    // if (meta.episode) {
-    //   meta.episodeTitle = response.Title || meta.episodeTitle;
-    // }
-
-    meta.plot = response.overview || meta.plot;
-    meta.rated = response.vote_average || meta.rated;
-    meta.year = (response.release_date && response.release_date.substring(0, 4)) || meta.year;
-    meta.title = response.title || meta.title;
-    meta.id = response.id || meta.id;
-    meta.lang = response.original_language || meta.lang;
-
-    return meta;
+    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'}, meta);
   }
 }
 /*

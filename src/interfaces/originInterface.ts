@@ -1,6 +1,6 @@
 import Sub from "./subInterface";
 import AuthDataInterface from "./authdataInterface";
-import Metadata from "./metadata";
+import Metadata from "./metadataInterface";
 
 interface OriginInterface {
   readonly authRequired: boolean;

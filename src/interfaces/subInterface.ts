@@ -1,4 +1,4 @@
-import Metadata from "./metadata";
+import Metadata from "./metadataInterface";
 
 interface Sub {
   description?:String;

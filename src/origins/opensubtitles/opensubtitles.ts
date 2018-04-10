@@ -1,9 +1,11 @@
-import Metadata from '../../interfaces/metadata';
+import Metadata from '../../interfaces/metadataInterface';
 import OriginInterface from '../../interfaces/originInterface';
 import Sub from '../../interfaces/subInterface';
 import OpenSubtitleAuth from './opensubtitle-auth';
 import OpensubtitlesManager from './opensubtitlesManager';
 import chalk from 'chalk';
+import Logger from '../../utils/logger';
+import MetadataStore from '../../utils/matadataStore';
 
 export default class OpenSubtitlesOrigin implements OriginInterface {
   private auth: OpenSubtitleAuth;
@@ -11,6 +13,8 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
   readonly authRequired = true;
   private authenticated: boolean;
   private manager: OpensubtitlesManager;
+  private log: Logger = Logger.Instance;
+  private store: MetadataStore = MetadataStore.Instance;
 
   constructor(username: string, password: string, lang: string, agent: string) {
     this.setAuthData(username, password, lang, agent);
@@ -19,8 +23,16 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
 
   search(meta: Metadata):  Promise<Sub[]> {
     var normalize = num => new String (100 + num).substring(1);
+    var OMDBMeta: Metadata;
+
     return new Promise<Sub[]>((resolve, reject) => {
-      console.log(chalk.gray('Searching for ... ') + chalk.yellow(meta.search.toString()));
+      console.log(chalk.gray('Searching for ... ') + chalk.yellow(`${meta.title} ${meta.season} ${meta.episode}`));
+
+      if (!meta.imdbID) {
+        OMDBMeta = this.store.get('omdb');
+        meta.imdbID = OMDBMeta.imdbID;
+      }
+
       this.manager.call('SearchSubtitles', [{sublanguageid: 'spa, eng', imdbid: meta.imdbID.substring(2)}])
         .then(response => {
           if (response.status === '200 OK') {

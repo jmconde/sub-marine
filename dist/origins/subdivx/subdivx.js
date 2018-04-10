@@ -12,8 +12,10 @@ const axios_1 = require("axios");
 const chalk_1 = require("chalk");
 const cheerio = require("cheerio");
 const stringScore = require("string-score");
+const logger_1 = require("../../utils/logger");
 class SubdivxOrigin {
     constructor() {
+        this.log = logger_1.default.Instance;
         this.downloadUrl = 'http://www.subdivx.com/bajar.php?id=';
         this.subSelector = '#buscador_detalle';
         this.detalleSelector = '#buscador_detalle_sub';
@@ -109,7 +111,7 @@ class SubdivxOrigin {
                 });
                 // TODO:
                 // if (tuneText && tuneText instanceof String && tuneText !== "") {
-                //   console.log('going to filter');
+                //   this.log.debug('going to filter');
                 //   subs.filter(d => {
                 //     return true;
                 //   })

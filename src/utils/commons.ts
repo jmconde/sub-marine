@@ -1,16 +1,16 @@
 import chalk from 'chalk';
-import { appendFileSync, createReadStream, createWriteStream, readFileSync } from 'fs';
-import { pathExistsSync } from 'fs-extra';
+import { appendFileSync, createReadStream, createWriteStream, readFileSync , existsSync} from 'fs';
 import * as unrar from 'node-unrar-js';
 import { sep } from 'path';
 import * as unzip from 'unzip';
 
-import Metadata from '../interfaces/metadata';
+import Metadata from '../interfaces/metadataInterface';
 import Sub from '../interfaces/subInterface';
-import OMDBManager from '../managers/OMDBManager';
-import TMDbManager from '../managers/TMDbManager';
+import Logger from './logger';
 
 export default class Commons {
+  private static log: Logger = Logger.Instance;
+
   static REGEX = {
     TOKENIZE: /([a-zA-Z0-9\[\]\(\)]{2,}|([a-zA-Z0-9]\.)+)/g,
     SEASON_EPISODE: /[s|S]\d{2}[e|E]\d{2}/,
@@ -19,8 +19,8 @@ export default class Commons {
   }
   static getFileBaseTitle(sub: Sub, filename: string, index: number = 0): string {
     var indexStr = index > 0 ? `.${index}` : '';
-    var ext = filename.split('.').pop();
-    var title = sub.meta.search.replace(/\s/g, '.');
+    var ext =  filename.split('.').pop();
+    var title = sub.meta.filename.substring(0, sub.meta.filename.lastIndexOf('.'));
 
     return `${title}${indexStr}.${sub.lang}.${ext}`;
   }
@@ -40,8 +40,12 @@ export default class Commons {
 
         if (entry.type === 'File' && this.isSubtitle(entry.path)) {
           fname = this.getFileBaseTitle(sub, entry.path, i++);
+          while (existsSync(`${dest}/${fname}`)) {
+            fname = this.getFileBaseTitle(sub, entry.path, i++);
+          }
+
           entry.pipe(createWriteStream(`${dest}/${fname}`)
-            .on('close', function () {
+            .on('close', () => {
               console.log(chalk.yellow(`File '${entry.path}' extracted as ${dest}/${fname}.`));
             }));
         } else {
@@ -49,7 +53,7 @@ export default class Commons {
         }
       })
       .on('close', () => resolve())
-      .on('error', () => reject());
+      .on('error', err => reject(err));
     });
   }
 
@@ -84,6 +88,10 @@ export default class Commons {
           if (file.extract[0].state === "SUCCESS") {
             buffer = file.extract[1];
             filename =  this.getFileBaseTitle(sub, file.fileHeader.name, i++);
+
+            while (existsSync(`${dest}/${filename}`)) {
+              filename =  this.getFileBaseTitle(sub, file.fileHeader.name, i++);
+            }
             //  // Uint8Array
             appendFileSync(`${dest}/${filename}`, new Buffer(buffer));
             console.log(chalk.yellow(`File '${file.fileHeader.name}' extracted as '${dest}/${filename}'.`));
@@ -117,58 +125,6 @@ export default class Commons {
     }
 
     return title.join(' ');
-  }
-
-  static async getMetaDataFromFilename(filepath: string): Promise<Metadata> {
-    var tokens = this.tokenize(this.getFilename(filepath));
-
-    return new Promise<Metadata>((resolve, reject) => {
-      var type: string = 'movie';
-      var matcher: RegExpMatchArray,
-        data: string,
-        season: number,
-        episode: number,
-        title: string,
-        year: string,
-        filename: string;
-
-      if (!pathExistsSync(filepath)) {
-        reject('File does not exist.')
-        return;
-      }
-      filename = filepath.substring(filepath.lastIndexOf(sep) + 1);
-      matcher = filename.match(this.REGEX.SEASON_EPISODE);
-      if (matcher !== null) {
-        type = 'series';
-      } else {
-        matcher = filename.match(this.REGEX.YEAR);
-      }
-      data = matcher[0].toUpperCase();
-      title = filename.substring(0, matcher.index).replace(/\.|\(\)/g, ' ').trim();
-
-      if (type === 'series') {
-        season = Number(data.substring(1, 3));
-        episode = Number(data.substring(4));
-      } else {
-        year = matcher[0].replace(/\.|\(\)/g, ' ').trim();
-      }
-
-      var meta: Metadata = {
-        title,
-        type,
-        filename,
-        path: filepath,
-        season,
-        episode,
-        year
-      };
-
-      meta.search = Commons.getSearchText(meta);
-
-      console.log(meta);
-
-      resolve(meta);
-    });
   }
 
   static getSearchText(meta: Metadata): string {

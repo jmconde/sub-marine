@@ -1,43 +1,34 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const manager_1 = require("./manager");
+const apiManager_1 = require("./apiManager");
 const chalk_1 = require("chalk");
-class OMDBManager extends manager_1.default {
+const OMDBMapper_1 = require("./mappers/OMDBMapper");
+class OMDBManager extends apiManager_1.default {
     constructor() {
         super(...arguments);
+        this.ID = 'omdb';
         this.URL = 'http://www.omdbapi.com';
-        this.API_KEY = 'omdb';
+        this.mapper = new OMDBMapper_1.default();
     }
-    get(path = '', query, meta) {
-        const _super = name => super[name];
-        return __awaiter(this, void 0, void 0, function* () {
-            return _super("get").call(this, path, meta).then(json => {
-                console.log(json);
-                return Promise.reject('Error!');
-            });
-        });
-    }
+    // async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
+    //   return super.get(path, query, meta).then(json => {
+    //     return Promise.reject<Metadata>('Error!');
+    //   });
+    // }
     check(json) {
         return json.Response === 'True' ? 0 : 1;
     }
     fill(meta) {
         console.log(chalk_1.default.grey('getting metadata from OMDB...'));
         var promise;
-        console.log(meta.type);
         if (meta.type === 'movie') {
-            promise = this.getMovie(meta);
+            promise = this.getMovie(meta).then(movieMeta => Object.assign(meta, movieMeta));
         }
         else if (meta.type === 'series') {
-            promise = this.getSeries(meta)
-                .then(meta => this.getEpisode(meta));
+            promise = this.getSeries(meta).then(seriesMeta => {
+                meta = Object.assign(meta, seriesMeta);
+                return this.getEpisode(meta);
+            });
         }
         else {
             Promise.reject('No type');
@@ -46,44 +37,26 @@ class OMDBManager extends manager_1.default {
     }
     getMovie(meta) {
         var qParams = {
-            t: encodeURIComponent(meta.title),
+            t: meta.title,
             type: 'movie'
         };
         return this.get('/', qParams, meta);
     }
     getSeries(meta) {
         var qParams = {
-            t: encodeURIComponent(meta.title),
+            t: meta.title,
             type: 'series'
         };
         return this.get('/', qParams, meta);
     }
     getEpisode(meta) {
         var qParams = {
-            t: encodeURIComponent(meta.title),
+            t: meta.title,
             type: 'episode',
             Season: meta.season,
             Episode: meta.episode
         };
         return this.get('/', qParams, meta);
-    }
-    mapper(response) {
-        var meta = {};
-        var r = response;
-        meta.title = r.Title;
-        meta.year = r.Year;
-        meta.rated = r.Rated;
-        meta.released = r.Released;
-        meta.genre = r.Genre;
-        meta.plot = r.Plot;
-        meta.runtime = r.Runtime;
-        meta.imdbID = r.imdbID;
-        meta.id = r.seriesID;
-        meta.metascore = r.Metascore;
-        meta.poster = r.Poster;
-        meta.type = r.Type;
-        meta.production = r.Production;
-        return meta;
     }
 }
 exports.default = OMDBManager;

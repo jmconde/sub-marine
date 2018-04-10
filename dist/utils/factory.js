@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const subdivx_1 = require("../origins/subdivx/subdivx");
 const opensubtitles_1 = require("../origins/opensubtitles/opensubtitles");
 const origin_types_1 = require("./origin-types");
+const logger_1 = require("./logger");
 class OriginFactory {
     static getOrigin(type) {
         console.log('Getting origin...', type);
@@ -16,5 +17,6 @@ class OriginFactory {
         }
     }
 }
+OriginFactory.log = logger_1.default.Instance;
 exports.default = OriginFactory;
 //# sourceMappingURL=factory.js.map

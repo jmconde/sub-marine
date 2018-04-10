@@ -1,18 +1,18 @@
-import Manager from "./manager";
-import Metadata from "../interfaces/metadata";
+import ApiManager from "./apiManager";
+import Metadata from "../interfaces/metadataInterface";
 import chalk from "chalk";
+import OMDBMapper from "./mappers/OMDBMapper";
 
-export default class OMDBManager extends Manager {
+export default class OMDBManager extends ApiManager {
+  ID = 'omdb';
   URL = 'http://www.omdbapi.com';
-  API_KEY = 'omdb';
+  mapper = new OMDBMapper();
 
-  async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
-    return super.get(path, meta).then(json => {
-      console.log(json);
-
-      return Promise.reject<Metadata>('Error!');
-    });
-  }
+  // async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
+  //   return super.get(path, query, meta).then(json => {
+  //     return Promise.reject<Metadata>('Error!');
+  //   });
+  // }
 
   check(json): number {
     return json.Response === 'True' ? 0 : 1;
@@ -21,12 +21,14 @@ export default class OMDBManager extends Manager {
   fill(meta: Metadata): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from OMDB...'));
     var promise;
-    console.log(meta.type);
+
     if (meta.type === 'movie') {
-      promise = this.getMovie(meta);
+      promise = this.getMovie(meta).then(movieMeta => Object.assign(meta, movieMeta));
     } else if (meta.type === 'series') {
-      promise = this.getSeries(meta)
-        .then(meta => this.getEpisode(meta));
+      promise = this.getSeries(meta).then(seriesMeta => {
+        meta = Object.assign(meta, seriesMeta);
+        return this.getEpisode(meta)
+      });
     } else {
       Promise.reject<Metadata>('No type');
     }
@@ -36,7 +38,7 @@ export default class OMDBManager extends Manager {
 
   getMovie(meta: Metadata): Promise<Metadata> {
     var qParams = {
-      t: encodeURIComponent(meta.title),
+      t: meta.title,
       type: 'movie'
     };
 
@@ -45,7 +47,7 @@ export default class OMDBManager extends Manager {
 
   getSeries(meta: Metadata): Promise<Metadata> {
     var qParams = {
-      t: encodeURIComponent(meta.title),
+      t: meta.title,
       type: 'series'
     };
 
@@ -54,34 +56,13 @@ export default class OMDBManager extends Manager {
 
   getEpisode(meta: Metadata): Promise<Metadata> {
     var qParams = {
-      t: encodeURIComponent(meta.title),
+      t: meta.title,
       type: 'episode',
       Season: meta.season,
       Episode: meta.episode
     };
 
     return this.get('/', qParams, meta);
-  }
-
-  mapper(response: any): Metadata {
-    var meta: Metadata = {};
-    var r = response;
-
-    meta.title = r.Title;
-    meta.year = r.Year;
-    meta.rated = r.Rated;
-    meta.released = r.Released;
-    meta.genre = r.Genre;
-    meta.plot = r.Plot;
-    meta.runtime = r.Runtime;
-    meta.imdbID = r.imdbID;
-    meta.id = r.seriesID;
-    meta.metascore = r.Metascore;
-    meta.poster = r.Poster;
-    meta.type = r.Type;
-    meta.production = r.Production;
-
-    return meta;
   }
 }
 /*

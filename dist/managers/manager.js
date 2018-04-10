@@ -14,9 +14,13 @@ const uriTemplate = require("uri-templates");
 class Manager {
     get(path = '', query, meta) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('In OMDBManager getMovie');
             return this.makeRequest(this.getUrl(query, path), 'get', meta)
-                .then(json => (this.check(json) === 0) ? this.mapper(json) : Promise.reject('Error ' + this.check(json)));
+                .then(json => (this.check(json) === 0) ? this.mapper.map(json, meta.type) : Promise.reject('Error ' + this.check(json)));
+        });
+    }
+    rawGet(path = '', query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.makeRequest(this.getUrl(query, path), 'get');
         });
     }
     list(path = '', query, meta) {
@@ -26,7 +30,7 @@ class Manager {
                 if (this.LIST_DATA_PATH) {
                     json = json[this.LIST_DATA_PATH];
                 }
-                return json.map(d => this.mapper(d));
+                return json.map(d => this.mapper.map(d, meta.type));
             });
         });
     }

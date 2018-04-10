@@ -2,16 +2,22 @@ import { request, RequestOptions } from "http";
 import { stringify } from "querystring";
 import * as URI from "urijs";
 import * as uriTemplate from "uri-templates";
-import Metadata from "../interfaces/metadata";
+import Metadata from "../interfaces/metadataInterface";
+import Mapper from "./mappers/mapper";
+import Manager from "../interfaces/manager";
+import Logger from "../utils/logger";
+import chalk from "chalk";
 
-export default abstract class Manager {
+export default abstract class ApiManager implements Manager {
   abstract URL:string;
-  API_KEY?: string;
+  abstract ID: string;
   LIST_DATA_PATH?: string;
+  abstract mapper: Mapper;
   static readonly REPONSE_OK = 0;
   static readonly REPONSE_NOT_FOUND = 1;
 
-  abstract mapper(response: any): Metadata;
+  protected log: Logger = Logger.Instance;
+
   abstract fill(meta: Metadata): Promise<Metadata>;
   abstract check(json): number;
 
@@ -19,21 +25,27 @@ export default abstract class Manager {
   async post?(url: String, body: any): Promise<Metadata>;
   async put?(url: String, body: any): Promise<Metadata>;
 
-  async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
-    console.log('In OMDBManager getMovie');
-
+  async get(path: string = '', query: any,  meta: Metadata): Promise<Metadata> {
     return this.makeRequest(this.getUrl(query, path), 'get',  meta)
-      .then(json => (this.check(json) === 0) ? this.mapper(json) : Promise.reject<Metadata>('Error ' + this.check(json)));
+      .then(json => {
+        var code: number = this.check(json);
+        this.log.colored('debug', 'magentaBright', json);
+        return (code === 0) ? this.mapper.map(json, meta.type) : Promise.reject<Metadata>('Error ' +  code);
+      });
   }
 
-  async list(path: string = '', query: any,  meta?: Metadata): Promise<Metadata[]>{
+  async rawGet(path: string = '', query: any): Promise<any> {
+    return this.makeRequest(this.getUrl(query, path), 'get');
+  }
+
+  async list(path: string = '', query: any,  meta: Metadata): Promise<Metadata[]>{
     return this.makeRequest(this.getUrl(query, path), 'get',  meta)
       .then(json => {
         if (this.LIST_DATA_PATH) {
           json = json[this.LIST_DATA_PATH];
         }
 
-        return json.map(d => this.mapper(d))
+        return json.map(d => this.mapper.map(d, meta.type))
       });
   }
 
@@ -57,8 +69,8 @@ export default abstract class Manager {
 
     query = query || {};
 
-    if (this.API_KEY) {
-      token = this.getToken(this.API_KEY);
+    if (this.ID) {
+      token = this.getToken(this.ID);
       query[token.name] = token.token;
     }
     return new uriTemplate(this.URL + path + '{?params*}').fillFromObject({params: query});;
@@ -74,7 +86,7 @@ export default abstract class Manager {
     var data = [];
 
     return new Promise<Metadata>((resolve, reject) => {
-      console.log('->', url);
+      this.log.debug('->', url);
       var req = request(url, res => {
         res.setEncoding('utf8');
         res.on('data', (chunk) => {

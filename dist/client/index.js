@@ -12,16 +12,19 @@ const chalk_1 = require("chalk");
 const commander = require("commander");
 const glob = require("glob");
 const inquirer_1 = require("inquirer");
-const inquirer_path_1 = require("inquirer-path");
+const selectDir = require("inquirer-select-directory");
 const path_1 = require("path");
 const main_1 = require("../main");
 const origin_types_1 = require("../utils/origin-types");
-inquirer_1.prompt.registerPrompt('path', inquirer_path_1.PathPrompt);
+const logger_1 = require("../utils/logger");
+inquirer_1.prompt.registerPrompt('directory', selectDir);
+const log = logger_1.default.Instance;
+log.setLevel('all');
 const FILES = {
-    type: 'path',
+    type: 'directory',
     name: 'path',
     message: 'Media files path:',
-    cwd: 'd:/downloads/test'
+    basePath: 'd:/downloads/' //process.cwd()
 };
 const OPTIONS = [{
         type: 'list',
@@ -35,8 +38,8 @@ const fileOpts = files => {
         name: 'file',
         message: `Select a file to download: [${files.length} Found]`,
         choices: files.map((file, i) => {
-            return { name: file.substring(file.lastIndexOf(path_1.sep) + 1), value: file };
-        })
+            return { name: `${i + 1}) ` + file.substring(file.lastIndexOf(path_1.sep) + 1), value: file };
+        }).concat([{ name: '<< Go back >>', value: '..' }])
     };
 };
 const subOptions = subs => {
@@ -44,9 +47,9 @@ const subOptions = subs => {
         type: 'list',
         name: 'sub',
         message: `Select a sub to download: [${subs.length} Found]`,
-        choices: subs.map((sub) => {
-            return { name: `${sub.meta.filename} ${sub.lang} (Score: ${sub.score})`, value: sub };
-        })
+        choices: subs.map((sub, i) => {
+            return { name: `${i + 1}) ${sub.meta.filename} ${sub.lang} (Score: ${sub.score})`, value: sub };
+        }).concat([new inquirer_1.Separator()])
     };
 };
 const AGAIN = {
@@ -61,39 +64,70 @@ function searchCycle(files) {
         while (!finished) {
             yield new Promise((resolve, reject) => {
                 inquirer_1.prompt(fileOpts(files)).then(choice => {
-                    inquirer_1.prompt(OPTIONS).then(answers => {
-                        submarine.get(answers.origin, choice.file, [])
-                            .then(subs => {
-                            if (subs && subs.length) {
-                                inquirer_1.prompt(subOptions(subs)).then(subSelection => {
-                                    submarine.download(subSelection.sub)
-                                        .then(() => {
-                                        inquirer_1.prompt(AGAIN).then(again => {
-                                            again.confirm ? resolve() : reject();
-                                        });
-                                    })
-                                        .catch(() => {
-                                        console.log(chalk_1.default.red('Error!'));
-                                        inquirer_1.prompt(AGAIN).then(again => {
-                                            again.confirm ? resolve() : reject();
+                    if (choice.file === '..') {
+                        reject('back');
+                        return;
+                    }
+                    else {
+                        inquirer_1.prompt(OPTIONS).then(answers => {
+                            submarine.get(answers.origin, choice.file, [])
+                                .then(subs => {
+                                if (subs && subs.length) {
+                                    inquirer_1.prompt(subOptions(subs)).then(subSelection => {
+                                        submarine.download(subSelection.sub)
+                                            .then(() => {
+                                            inquirer_1.prompt(AGAIN).then(again => {
+                                                again.confirm ? resolve() : reject();
+                                            });
+                                        })
+                                            .catch(() => {
+                                            console.error(chalk_1.default.red('Error!'));
+                                            inquirer_1.prompt(AGAIN).then(again => {
+                                                again.confirm ? resolve() : reject();
+                                            });
                                         });
                                     });
-                                });
-                            }
-                            else {
-                                console.log(chalk_1.default.yellow('Not subs were found.'));
-                                inquirer_1.prompt(AGAIN).then(again => {
-                                    again.confirm ? resolve() : reject();
-                                });
-                            }
+                                }
+                                else {
+                                    console.log(chalk_1.default.yellow('Not subs were found.'));
+                                    inquirer_1.prompt(AGAIN).then(again => {
+                                        again.confirm ? resolve() : reject();
+                                    });
+                                }
+                            });
                         });
-                    });
+                    }
                 });
             });
         }
         return Promise.resolve();
     });
 }
+function pFiles() {
+    return __awaiter(this, void 0, void 0, function* () {
+        inquirer_1.prompt(FILES).then(sel => {
+            console.log(path_1.normalize(`${sel.path}/*.{avi,mp4,mkv,webm}`));
+            glob(path_1.normalize(`${sel.path}/*.{avi,mp4,mkv,webm}`), {}, function (err, files) {
+                if (err) {
+                    console.error(err);
+                    process.exit(1);
+                }
+                log.debug(files);
+                files = files.map(d => path_1.normalize(d));
+                searchCycle(files)
+                    .catch(err => {
+                    if (err === 'back') {
+                        pFiles();
+                        return;
+                    }
+                    console.log(chalk_1.default.gray(`Thanks for using ${chalk_1.default.white('SubMarine')}.`));
+                    process.exit(0);
+                });
+            });
+        });
+    });
+}
+;
 commander
     .version('0.0.1')
     .description('subtitles marine');
@@ -101,26 +135,6 @@ commander
     .command('search')
     .alias('s')
     .description('Search')
-    .action(() => {
-    inquirer_1.prompt(FILES).then(sel => {
-        console.log(path_1.normalize(`${sel.path}/**/*.{avi,mp4,mkv,webm}`));
-        glob(path_1.normalize(`${sel.path}/**/*.{avi,mp4,mkv,webm}`), {}, function (err, files) {
-            if (err) {
-                console.log(err);
-                process.exit(1);
-            }
-            files = files.map(d => path_1.normalize(d));
-            searchCycle(files)
-                .catch(() => {
-                console.log(chalk_1.default.gray(`Thanks for using ${chalk_1.default.white('SubMarine')}.`));
-                process.exit(0);
-            });
-            // files is an array of filenames.
-            // If the `nonull` option is set, and nothing
-            // was found, then files is ["**/*.js"]
-            // er is an error object or null.
-        });
-    });
-});
+    .action(pFiles);
 commander.parse(process.argv);
 //# sourceMappingURL=index.js.map

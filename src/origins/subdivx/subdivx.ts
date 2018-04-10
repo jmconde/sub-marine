@@ -5,9 +5,11 @@ import * as stringScore from 'string-score';
 
 import OriginInterface from '../../interfaces/originInterface';
 import Sub from '../../interfaces/subInterface';
-import Metadata from '../../interfaces/metadata';
+import Metadata from '../../interfaces/metadataInterface';
+import Logger from '../../utils/logger';
 
 class SubdivxOrigin implements OriginInterface {
+  private log: Logger = Logger.Instance;
   private searchText: String;
   private actualPage: number;
   private readonly downloadUrl = 'http://www.subdivx.com/bajar.php?id=';
@@ -119,7 +121,7 @@ class SubdivxOrigin implements OriginInterface {
 
         // TODO:
         // if (tuneText && tuneText instanceof String && tuneText !== "") {
-        //   console.log('going to filter');
+        //   this.log.debug('going to filter');
         //   subs.filter(d => {
         //     return true;
         //   })
