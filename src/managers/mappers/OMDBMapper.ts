@@ -2,7 +2,7 @@ import Mapper from "./mapper";
 import Metadata from "../../interfaces/metadataInterface";
 
 export default class OMDBMapper extends Mapper {
-  MAP_DEF = {
+  DEFAULT = {
     title: 'Title',
     year: 'Year',
     rated: 'Rated',

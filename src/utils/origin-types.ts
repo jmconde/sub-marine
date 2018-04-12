@@ -4,4 +4,10 @@ export default class TYPES {
     SUBDIVX: 'subdivx',
     OPEN_SUBTITLES: 'opensubtitles'
   }
+  static FILE = {
+    MOVIE: 'movie',
+    SERIES: 'series',
+    EPISODE: 'episode',
+    SPECIAL: 'special'
+  }
 }

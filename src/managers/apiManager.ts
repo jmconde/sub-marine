@@ -1,12 +1,12 @@
-import { request, RequestOptions } from "http";
-import { stringify } from "querystring";
-import * as URI from "urijs";
-import * as uriTemplate from "uri-templates";
-import Metadata from "../interfaces/metadataInterface";
-import Mapper from "./mappers/mapper";
-import Manager from "../interfaces/manager";
-import Logger from "../utils/logger";
-import chalk from "chalk";
+import { request } from 'http';
+import { stringify } from 'querystring';
+import * as uriTemplate from 'uri-templates';
+
+import FileInfo from '../interfaces/fileInfoInterface';
+import Manager from '../interfaces/manager';
+import Metadata from '../interfaces/metadataInterface';
+import Logger from '../utils/logger';
+import Mapper from './mappers/mapper';
 
 export default abstract class ApiManager implements Manager {
   abstract URL:string;
@@ -16,36 +16,36 @@ export default abstract class ApiManager implements Manager {
   static readonly REPONSE_OK = 0;
   static readonly REPONSE_NOT_FOUND = 1;
 
-  protected log: Logger = Logger.Instance;
+  protected log: Logger = Logger.getInstance();
 
-  abstract fill(meta: Metadata): Promise<Metadata>;
+  abstract fill(info: FileInfo): Promise<Metadata>;
   abstract check(json): number;
 
   async delete?(url: String): Promise<Metadata>;
   async post?(url: String, body: any): Promise<Metadata>;
   async put?(url: String, body: any): Promise<Metadata>;
 
-  async get(path: string = '', query: any,  meta: Metadata): Promise<Metadata> {
-    return this.makeRequest(this.getUrl(query, path), 'get',  meta)
+  async get(path: string = '', query: any, type?: string): Promise<Metadata> {
+    return this.makeRequest(this.getUrl(query, path), 'get')
       .then(json => {
         var code: number = this.check(json);
         this.log.colored('debug', 'magentaBright', json);
-        return (code === 0) ? this.mapper.map(json, meta.type) : Promise.reject<Metadata>('Error ' +  code);
+        return (code === 0) ? this.mapper.map(json, type) : Promise.reject<Metadata>('Error ' +  code);
       });
   }
 
-  async rawGet(path: string = '', query: any): Promise<any> {
+  async rawGet(path: string = '', query: any, type?: string): Promise<any> {
     return this.makeRequest(this.getUrl(query, path), 'get');
   }
 
-  async list(path: string = '', query: any,  meta: Metadata): Promise<Metadata[]>{
-    return this.makeRequest(this.getUrl(query, path), 'get',  meta)
+  async list(path: string = '', query: any, type?: string): Promise<Metadata[]>{
+    return this.makeRequest(this.getUrl(query, path), 'get')
       .then(json => {
         if (this.LIST_DATA_PATH) {
           json = json[this.LIST_DATA_PATH];
         }
 
-        return json.map(d => this.mapper.map(d, meta.type))
+        return json.map(d => this.mapper.map(d, type))
       });
   }
 
@@ -71,7 +71,9 @@ export default abstract class ApiManager implements Manager {
 
     if (this.ID) {
       token = this.getToken(this.ID);
-      query[token.name] = token.token;
+      if (token) {
+        query[token.name] = token.token;
+      }
     }
     return new uriTemplate(this.URL + path + '{?params*}').fillFromObject({params: query});;
   }
@@ -80,12 +82,12 @@ export default abstract class ApiManager implements Manager {
     return new uriTemplate(path).fill(data);
   }
 
-  makeRequest (url: string, method: string = 'get', meta?: Metadata, body?: any) : Promise<any>{
+  makeRequest (url: string, method: string = 'get', body?: any) : Promise<any>{
     // var options = new URL(url);
     var postData;
     var data = [];
 
-    return new Promise<Metadata>((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
       this.log.debug('->', url);
       var req = request(url, res => {
         res.setEncoding('utf8');

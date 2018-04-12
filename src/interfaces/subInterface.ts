@@ -1,4 +1,5 @@
 import Metadata from "./metadataInterface";
+import FileInfo from "./fileInfoInterface";
 
 interface Sub {
   description?:String;
@@ -12,7 +13,8 @@ interface Sub {
   score?: Number,
   origin?: string,
   group?: string,
-  meta?: Metadata
+  meta: Metadata,
+  file: FileInfo
 }
 
 export default Sub;

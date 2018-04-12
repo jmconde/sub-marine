@@ -9,13 +9,13 @@ class OpenSubtitlesOrigin {
     constructor(username, password, lang, agent) {
         this.ENDPOINT = 'https://api.opensubtitles.org/xml-rpc';
         this.authRequired = true;
-        this.log = logger_1.default.Instance;
+        this.log = logger_1.default.getInstance();
         this.store = matadataStore_1.default.Instance;
         this.setAuthData(username, password, lang, agent);
         this.manager = new opensubtitlesManager_1.default(this.auth);
     }
-    search(meta) {
-        var normalize = num => new String(100 + num).substring(1);
+    search(search) {
+        var meta = search.metadata;
         var OMDBMeta;
         return new Promise((resolve, reject) => {
             console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(`${meta.title} ${meta.season} ${meta.episode}`));
@@ -39,6 +39,7 @@ class OpenSubtitlesOrigin {
                             lang: d.ISO639,
                             score: 0,
                             meta: meta,
+                            file: search.fileInfo,
                             origin: 'opensubtitles.org'
                         };
                         return sub;

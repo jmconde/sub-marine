@@ -5,33 +5,37 @@ const path_1 = require("path");
 const commons_1 = require("../utils/commons");
 const chalk_1 = require("chalk");
 const logger_1 = require("../utils/logger");
+const origin_types_1 = require("../utils/origin-types");
 class FilenameManager {
     constructor() {
-        this.ID = 'file';
-        this.log = logger_1.default.Instance;
+        this.ID = 'fileInfo';
+        this.log = logger_1.default.getInstance();
     }
-    fill(meta) {
-        var filepath = meta.path;
-        var tokens = commons_1.default.tokenize(commons_1.default.getFilename(filepath));
+    fill(filePath) {
+        var tokens = commons_1.default.tokenize(commons_1.default.getFilename(filePath));
         console.log(chalk_1.default.grey('getting metadata from Filename...'));
         return new Promise((resolve, reject) => {
-            var type = 'movie';
-            var matcher, data, season, episode, title, year, filename;
-            if (!fs_extra_1.pathExistsSync(filepath)) {
+            var type = origin_types_1.default.FILE.MOVIE;
+            var lastIndex = filePath.lastIndexOf(path_1.sep);
+            var matcher, data, season, episode, title, year, filename, extension, fullName, path;
+            if (!fs_extra_1.pathExistsSync(filePath)) {
                 reject('File does not exist.');
                 return;
             }
-            filename = filepath.substring(filepath.lastIndexOf(path_1.sep) + 1);
+            fullName = filePath.substring(lastIndex + 1);
+            filename = fullName.substring(0, fullName.lastIndexOf('.'));
+            extension = fullName.split('.').pop();
+            path = filePath.substring(0, lastIndex);
             matcher = filename.match(commons_1.default.REGEX.SEASON_EPISODE);
             if (matcher) {
-                type = 'series';
+                type = origin_types_1.default.FILE.EPISODE;
             }
             else {
                 matcher = filename.match(commons_1.default.REGEX.YEAR);
             }
             data = matcher[0].toUpperCase();
             title = filename.substring(0, matcher.index);
-            if (type === 'series') {
+            if (type === origin_types_1.default.FILE.EPISODE) {
                 season = Number(data.substring(1, 3));
                 episode = Number(data.substring(4));
                 matcher = title.match(commons_1.default.REGEX.YEAR);
@@ -45,17 +49,19 @@ class FilenameManager {
             }
             title = title.replace(/\.|\(\)/g, ' ').trim();
             this.log.colored('debug', 'greenBright', title);
-            var meta = {
+            var info = {
+                fullPath: filePath,
+                filename,
+                fullName,
+                path,
+                extension,
                 title,
                 type,
-                filename,
-                path: filepath,
                 season,
                 episode,
                 year
             };
-            meta.search = commons_1.default.getSearchText(meta);
-            resolve(meta);
+            resolve(info);
         });
     }
 }

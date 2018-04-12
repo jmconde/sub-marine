@@ -6,6 +6,8 @@ import OpensubtitlesManager from './opensubtitlesManager';
 import chalk from 'chalk';
 import Logger from '../../utils/logger';
 import MetadataStore from '../../utils/matadataStore';
+import Search from '../../interfaces/searchInterface';
+import Commons from '../../utils/commons';
 
 export default class OpenSubtitlesOrigin implements OriginInterface {
   private auth: OpenSubtitleAuth;
@@ -13,7 +15,7 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
   readonly authRequired = true;
   private authenticated: boolean;
   private manager: OpensubtitlesManager;
-  private log: Logger = Logger.Instance;
+  private log: Logger = Logger.getInstance();
   private store: MetadataStore = MetadataStore.Instance;
 
   constructor(username: string, password: string, lang: string, agent: string) {
@@ -21,8 +23,8 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
     this.manager = new OpensubtitlesManager(this.auth);
   }
 
-  search(meta: Metadata):  Promise<Sub[]> {
-    var normalize = num => new String (100 + num).substring(1);
+  search(search: Search):  Promise<Sub[]> {
+    var meta = search.metadata;
     var OMDBMeta: Metadata;
 
     return new Promise<Sub[]>((resolve, reject) => {
@@ -49,6 +51,7 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
                 lang: d.ISO639,
                 score: 0,
                 meta: meta,
+                file: search.fileInfo,
                 origin: 'opensubtitles.org'
               };
               return sub;

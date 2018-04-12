@@ -18,7 +18,7 @@ const main_1 = require("../main");
 const origin_types_1 = require("../utils/origin-types");
 const logger_1 = require("../utils/logger");
 inquirer_1.prompt.registerPrompt('directory', selectDir);
-const log = logger_1.default.Instance;
+const log = logger_1.default.getInstance();
 log.setLevel('all');
 const FILES = {
     type: 'directory',
@@ -48,7 +48,7 @@ const subOptions = subs => {
         name: 'sub',
         message: `Select a sub to download: [${subs.length} Found]`,
         choices: subs.map((sub, i) => {
-            return { name: `${i + 1}) ${sub.meta.filename} ${sub.lang} (Score: ${sub.score})`, value: sub };
+            return { name: `${i + 1}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub };
         }).concat([new inquirer_1.Separator()])
     };
 };

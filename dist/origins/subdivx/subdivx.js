@@ -15,7 +15,7 @@ const stringScore = require("string-score");
 const logger_1 = require("../../utils/logger");
 class SubdivxOrigin {
     constructor() {
-        this.log = logger_1.default.Instance;
+        this.log = logger_1.default.getInstance();
         this.downloadUrl = 'http://www.subdivx.com/bajar.php?id=';
         this.subSelector = '#buscador_detalle';
         this.detalleSelector = '#buscador_detalle_sub';
@@ -45,9 +45,9 @@ class SubdivxOrigin {
         var score = stringScore(textToCompare, textToFind, fuzziness);
         return Math.round(score * total);
     }
-    getPage(meta) {
+    getPage(search) {
         return new Promise((resolve, reject) => {
-            axios_1.default.get(this.getUrl(meta.search), {}).then((response) => {
+            axios_1.default.get(this.getUrl(search.searchString), {}).then((response) => {
                 var $ = cheerio.load(response.data);
                 var $subs = $(this.subSelector);
                 var subs = [];
@@ -91,7 +91,7 @@ class SubdivxOrigin {
                     var description = $detalle.text();
                     var uploader = $a.eq(1).text();
                     var url = $a.eq(2).attr('href');
-                    var score = this.getScore(title + ' ' + description + ' ' + format, meta.search);
+                    var score = this.getScore(title + ' ' + description + ' ' + format, search.searchString);
                     var lang = 'es';
                     var origin = 'SubDivX';
                     sub = {
@@ -104,7 +104,8 @@ class SubdivxOrigin {
                         url,
                         score,
                         lang,
-                        meta,
+                        meta: search.metadata,
+                        file: search.fileInfo,
                         origin
                     };
                     subs.push(sub);
@@ -120,7 +121,7 @@ class SubdivxOrigin {
             });
         });
     }
-    lookup(meta) {
+    lookup(search) {
         return __awaiter(this, void 0, void 0, function* () {
             var found = [];
             var finished = false;
@@ -137,10 +138,10 @@ class SubdivxOrigin {
                 }
             };
             this.actualPage = 1;
-            console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(meta.search.toString()));
+            console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(search.searchString));
             while (!finished) {
                 yield new Promise((resolve, reject) => {
-                    this.getPage(meta).then((subs) => {
+                    this.getPage(search).then((subs) => {
                         found = found.concat(subs);
                         this.actualPage++;
                         resolve();
@@ -156,8 +157,8 @@ class SubdivxOrigin {
             return Promise.resolve(found.sort(sortFn));
         });
     }
-    search(meta) {
-        return this.lookup(meta);
+    search(search) {
+        return this.lookup(search);
     }
     download(sub, dest) {
         return null;

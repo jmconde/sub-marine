@@ -17,6 +17,6 @@ class OriginFactory {
         }
     }
 }
-OriginFactory.log = logger_1.default.Instance;
+OriginFactory.log = logger_1.default.getInstance();
 exports.default = OriginFactory;
 //# sourceMappingURL=factory.js.map

@@ -2,6 +2,8 @@ import ApiManager from "./apiManager";
 import Metadata from "../interfaces/metadataInterface";
 import chalk from "chalk";
 import TMDbMapper from "./mappers/TMDbMapper";
+import FileInfo from "../interfaces/fileInfoInterface";
+import TYPES from "../utils/origin-types";
 
 export default class TMDbManager extends ApiManager {
   ID = 'tmdb';
@@ -13,62 +15,64 @@ export default class TMDbManager extends ApiManager {
     return !json.status_code  ? 0 : 1;
   }
 
-  fill(meta: Metadata): Promise<Metadata> {
+  fill(info: FileInfo): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from TMDb...'));
 
-    return this.find(meta)
-      .then(findMeta =>  Object.assign(meta, findMeta))
+    return this.find(info.title, info.year, info.type)
       .then(meta => {
-        if (meta.type === 'movie') {
-          return this.getMovie(meta).then(movieMeta => Object.assign(meta, movieMeta));
-        } else if (meta.type === 'series') {
-          return this.getEpisode(meta).then(seriesMeta => Object.assign(meta, seriesMeta));
+        if (info.type === TYPES.FILE.MOVIE) {
+          return this.getMovie(meta.id);
+        } else if (info.type === TYPES.FILE.EPISODE) {
+          return this.getEpisode(meta.id, info.season, info.episode).then(episodeMeta => {
+            meta.episodeData = episodeMeta;
+
+            return meta;
+          });
         } else {
-          Promise.reject<Metadata>('No type');
+          Promise.reject<Metadata>('TMDb: No type');
         }
       });
   }
 
-  find(meta: Metadata): Promise<Metadata> {
+  find(title: string, year: string, type: string): Promise<Metadata> {
     var q: any = {
-      query: meta.title
+      query: title
     };
 
-    if (meta.year) {
-      q.year = meta.year
+    if (year) {
+      q.year = year
     }
 
     var path = '/3/search/tv';
 
-    if (meta.type === 'movie') {
+    if (type === 'movie') {
       path = '/3/search/movie'
     }
 
     return new Promise<Metadata>((resolve, reject) => {
-      this.list(path, q, meta)
+      this.list(path, q)
       .then(list => {
         resolve(list[0])
       })
     });
   }
 
-  getMovie(meta: Metadata): Promise<Metadata> {
-    console.log(meta);
+  getMovie(id: string): Promise<Metadata> {
     var path = '/3/movie/{movie_id}';
     var pathData = {
-      movie_id: meta.id
+      movie_id: id
     }
 
-    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'}, meta);
+    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'});
   }
 
-  getSeries(meta: Metadata): Promise<Metadata> {
+  getSeries(id: string): Promise<Metadata> {
     var path = '/3/tv/{tv_id}';
     var pathData = {
-      tv_id: meta.id
+      tv_id: id
     }
 
-    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'}, meta);
+    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'});
   }
 
   getExternalIds(id: string, season: number) {
@@ -80,15 +84,15 @@ export default class TMDbManager extends ApiManager {
     return this.rawGet(this.getPath(path, pathData), {});
   }
 
-  getEpisode(meta: Metadata): Promise<Metadata> {
+  getEpisode(id: string, season: number, episode: number): Promise<Metadata> {
     var path = '/3/tv/{tv_id}/season/{season_number}/episode/{episode_number}';
     var pathData = {
-      tv_id: meta.id,
-      season_number: meta.season,
-      episode_number: meta.episode
+      tv_id: id,
+      season_number: season,
+      episode_number: episode
     };
 
-    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'}, meta);
+    return this.get(this.getPath(path, pathData), {append_to_response: 'external_ids'});
   }
 }
 /*

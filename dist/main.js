@@ -7,8 +7,8 @@ const path_1 = require("path");
 const request = require("request");
 const OMDBManager_1 = require("./managers/OMDBManager");
 const TMDbManager_1 = require("./managers/TMDbManager");
+const TVMazeManager_1 = require("./managers/TVMazeManager");
 const commons_1 = require("./utils/commons");
-const factory_1 = require("./utils/factory");
 const FilenameManager_1 = require("./managers/FilenameManager");
 const logger_1 = require("./utils/logger");
 const matadataStore_1 = require("./utils/matadataStore");
@@ -16,54 +16,80 @@ class SubMarine {
     constructor() {
         this.OMDB = new OMDBManager_1.default();
         this.TMDb = new TMDbManager_1.default();
-        this.log = logger_1.default.Instance;
+        this.TVMaze = new TVMazeManager_1.default();
+        this.log = logger_1.default.getInstance();
         this.Filename = new FilenameManager_1.default();
         this.store = matadataStore_1.default.Instance;
     }
     get(originType, filepath, langs) {
-        this.log.setLevel('all');
         let origin;
         let promise = Promise.resolve();
-        origin = factory_1.default.getOrigin(originType);
-        if (origin.authRequired) {
-            promise = promise.then(() => origin.authenticate());
-        }
-        promise = this.getMetadata(filepath)
-            .then(meta => origin.search(meta, langs));
-        // promise = promise.then(() => [])
-        //   // promise.then((meta) => );
-        //   // promise = promise.catch(() => []);
-        return promise;
+        var subs = [];
+        var search;
+        return new Promise((resolve, reject) => {
+            var promises = [];
+            this.getFileInfo(filepath).then(info => {
+                search = {
+                    fileInfo: info,
+                    searchString: commons_1.default.getSearchText(info),
+                    langs: [],
+                    metadata: null
+                };
+                this.log.cDebug(logger_1.default.YELLOW_BRIGHT, search);
+                promises[0] = this.OMDB.fill(info);
+                promises[1] = this.TMDb.fill(info);
+                promises[2] = this.TVMaze.fill(info);
+                Promise.all(promises).then(r => {
+                    console.log('\n\n\n');
+                    console.log(r);
+                    resolve(subs);
+                });
+            });
+            //   // var data = [
+            //   // ]
+            //   resolve([]);
+        });
     }
-    getMetadata(filePath) {
-        console.log(chalk_1.default.greenBright(this.log.getLevel()));
-        return this.Filename.fill({ path: path_1.normalize(filePath) })
-            .then(fileMeta => {
-            this.log.debug(chalk_1.default.blueBright(JSON.stringify(fileMeta, null, 2)));
-            this.store.set(this.Filename.ID, fileMeta);
-            return fileMeta;
-        })
-            .then((meta) => this.TMDb.fill(meta))
-            .then(TMDbMeta => {
-            this.log.debug(chalk_1.default.yellowBright(JSON.stringify(TMDbMeta, null, 2)));
-            this.store.set(this.TMDb.ID, TMDbMeta);
-            return TMDbMeta;
-        })
-            .then(meta => this.OMDB.fill(meta))
-            .then(OMDBMeta => {
-            console.log('================================');
-            this.store.set(this.OMDB.ID, OMDBMeta);
-            return this.store.get(this.TMDb.ID);
-        })
-            /*
-            .then((meta) => this.OMDB.fill(meta).catch(err => Promise.resolve<Metadata>(meta)))
-            .then(OMDBMeta => {
-              this.log.debug(chalk.greenBright(JSON.stringify(OMDBMeta, null, 2)));
-              this.store.set(this.OMDB.ID, OMDBMeta);
-              return OMDBMeta;
-            }) */
-            .catch(err => this.log.error(err));
+    // origin =  OriginFactory.getOrigin(originType);
+    // if (origin.authRequired) {
+    //   promise = promise.then(() => origin.authenticate());
+    // }
+    // promise = this.getMetadata(filepath)
+    //   .then(meta => origin.search(meta, langs));
+    // promise = promise.then(() => [])
+    //   // promise.then((meta) => );
+    //   // promise = promise.catch(() => []);
+    getFileInfo(path) {
+        return this.Filename.fill(path_1.normalize(path))
+            .then(fileInfo => {
+            this.log.debug(chalk_1.default.blueBright(JSON.stringify(fileInfo, null, 2)));
+            this.store.set(this.Filename.ID, fileInfo);
+            return fileInfo;
+        });
     }
+    // getMetadata(meta: Metadata): Promise<Metadata> {
+    //   console.log(chalk.greenBright(this.log.getLevel()));
+    //   return this.TMDb.fill(meta)
+    //     .then(TMDbMeta => {
+    //       this.log.debug(chalk.yellowBright(JSON.stringify(TMDbMeta, null, 2)));
+    //       this.store.set(this.TMDb.ID, TMDbMeta);
+    //       return TMDbMeta;
+    //     })
+    //     .then(meta => this.OMDB.fill(meta))
+    //     .then(OMDBMeta => {
+    //       console.log('================================');
+    //       this.store.set(this.OMDB.ID, OMDBMeta)
+    //       return this.store.get(this.TMDb.ID);
+    //     })
+    //     /*
+    //     .then((meta) => this.OMDB.fill(meta).catch(err => Promise.resolve<Metadata>(meta)))
+    //     .then(OMDBMeta => {
+    //       this.log.debug(chalk.greenBright(JSON.stringify(OMDBMeta, null, 2)));
+    //       this.store.set(this.OMDB.ID, OMDBMeta);
+    //       return OMDBMeta;
+    //     }) */
+    //     .catch(err => this.log.error(err));
+    // }
     download(sub, path) {
         var date = new Date().getTime();
         var tempFile = `./temp_${date}`;

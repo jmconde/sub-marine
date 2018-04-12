@@ -1,9 +1,7 @@
 import Sub from "./subInterface";
+import FileInfo from "./fileInfoInterface";
 
 export default interface Metadata {
-  episode?: number
-  episodeTitle?: string;
-  filename?: string;
   genre?:string;
   id?: string;
   imdbID?: string;
@@ -18,7 +16,10 @@ export default interface Metadata {
   runtime?: string;
   search?: string;
   season?: number,
+  episode?: number;
+  episodeData?: Metadata;
   title?: string;
   type?: string;
   year?: string;
+  source?: string;
 }

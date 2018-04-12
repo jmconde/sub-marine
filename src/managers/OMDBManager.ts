@@ -2,11 +2,17 @@ import ApiManager from "./apiManager";
 import Metadata from "../interfaces/metadataInterface";
 import chalk from "chalk";
 import OMDBMapper from "./mappers/OMDBMapper";
+import TYPES from "../utils/origin-types";
+import FileInfo from "../interfaces/fileInfoInterface";
+import Logger from "../utils/logger";
 
 export default class OMDBManager extends ApiManager {
   ID = 'omdb';
   URL = 'http://www.omdbapi.com';
   mapper = new OMDBMapper();
+
+  MOVIE = 'movie';
+  RESPONSE_OK = 'True';
 
   // async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
   //   return super.get(path, query, meta).then(json => {
@@ -15,54 +21,56 @@ export default class OMDBManager extends ApiManager {
   // }
 
   check(json): number {
-    return json.Response === 'True' ? 0 : 1;
+    return json.Response === this.RESPONSE_OK ? 0 : 1;
   }
 
-  fill(meta: Metadata): Promise<Metadata> {
+  fill(info: FileInfo): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from OMDB...'));
-    var promise;
+    this.log.cDebug(Logger.BLUE_BRIGHT, TYPES.FILE.EPISODE)
+    this.log.cDebug(Logger.BLUE_BRIGHT, info)
+    if (info.type === TYPES.FILE.MOVIE) {
+      return this.getMovie(info.title);
+    } else if (info.type === TYPES.FILE.EPISODE) {
+      return this.getSeries(info.title)
+        .then(seriesMeta => {
+          return this.getEpisode(info.title, info.season, info.episode).then(episodeMeta => {
+            seriesMeta.episodeData = episodeMeta;
 
-    if (meta.type === 'movie') {
-      promise = this.getMovie(meta).then(movieMeta => Object.assign(meta, movieMeta));
-    } else if (meta.type === 'series') {
-      promise = this.getSeries(meta).then(seriesMeta => {
-        meta = Object.assign(meta, seriesMeta);
-        return this.getEpisode(meta)
-      });
+            return seriesMeta;
+          })
+        });
     } else {
-      Promise.reject<Metadata>('No type');
+      return Promise.reject<Metadata>('OMDB: No type');
     }
-
-    return promise;
   }
 
-  getMovie(meta: Metadata): Promise<Metadata> {
+  getMovie(title: string): Promise<Metadata> {
     var qParams = {
-      t: meta.title,
+      t: title,
       type: 'movie'
     };
 
-    return this.get('/', qParams, meta);
+    return this.get('/', qParams, TYPES.FILE.MOVIE);
   }
 
-  getSeries(meta: Metadata): Promise<Metadata> {
+  getSeries(title: string): Promise<Metadata> {
     var qParams = {
-      t: meta.title,
+      t: title,
       type: 'series'
     };
 
-    return this.get('/', qParams, meta);
+    return this.get('/', qParams, TYPES.FILE.SERIES);
   }
 
-  getEpisode(meta: Metadata): Promise<Metadata> {
+  getEpisode(title: string, season: number, episode: number): Promise<Metadata> {
     var qParams = {
-      t: meta.title,
+      t: title,
       type: 'episode',
-      Season: meta.season,
-      Episode: meta.episode
+      Season: season,
+      Episode: episode
     };
 
-    return this.get('/', qParams, meta);
+    return this.get('/', qParams, TYPES.FILE.SERIES);
   }
 }
 /*

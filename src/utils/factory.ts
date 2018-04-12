@@ -6,7 +6,7 @@ import Logger from './logger';
 
 
 class OriginFactory {
-  private static log: Logger = Logger.Instance;
+  private static log: Logger = Logger.getInstance();
 
   static getOrigin(type: String): OriginInterface {
     console.log('Getting origin...', type);

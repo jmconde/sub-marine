@@ -4,10 +4,10 @@ const util_1 = require("util");
 class Mapper {
     map(json, type) {
         var meta = {};
-        meta.type = type;
-        for (const key in this.MAP_DEF) {
-            if (this.MAP_DEF.hasOwnProperty(key)) {
-                const value = this.MAP_DEF[key];
+        var typeDef = (type && this[`${type.toUpperCase()}`]) || this.DEFAULT;
+        for (const key in typeDef) {
+            if (typeDef.hasOwnProperty(key)) {
+                const value = typeDef[key];
                 if (util_1.isString(value)) {
                     this.add(meta, key, this.find(value, json));
                 }

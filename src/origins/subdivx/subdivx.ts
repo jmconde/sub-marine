@@ -7,9 +7,10 @@ import OriginInterface from '../../interfaces/originInterface';
 import Sub from '../../interfaces/subInterface';
 import Metadata from '../../interfaces/metadataInterface';
 import Logger from '../../utils/logger';
+import Search from '../../interfaces/searchInterface';
 
 class SubdivxOrigin implements OriginInterface {
-  private log: Logger = Logger.Instance;
+  private log: Logger = Logger.getInstance();
   private searchText: String;
   private actualPage: number;
   private readonly downloadUrl = 'http://www.subdivx.com/bajar.php?id=';
@@ -46,9 +47,9 @@ class SubdivxOrigin implements OriginInterface {
     return Math.round(score * total);
   }
 
-  private getPage(meta: Metadata): Promise<Sub[]> {
+  private getPage(search: Search): Promise<Sub[]> {
     return new Promise<Sub[]>((resolve, reject) => {
-      axios.get(this.getUrl(meta.search), {}).then((response) => {
+      axios.get(this.getUrl(search.searchString), {}).then((response) => {
         var $ = cheerio.load(response.data);
         var $subs = $(this.subSelector);
         var subs: Sub[] = [];
@@ -96,7 +97,7 @@ class SubdivxOrigin implements OriginInterface {
           var description = $detalle.text();
           var uploader = $a.eq(1).text();
           var url = $a.eq(2).attr('href');
-          var score = this.getScore(title + ' ' + description + ' ' + format, meta.search);
+          var score = this.getScore(title + ' ' + description + ' ' + format, search.searchString);
           var lang = 'es';
           var origin = 'SubDivX'
 
@@ -111,7 +112,8 @@ class SubdivxOrigin implements OriginInterface {
             url,
             score,
             lang,
-            meta,
+            meta: search.metadata,
+            file: search.fileInfo,
             origin
           };
 
@@ -132,7 +134,7 @@ class SubdivxOrigin implements OriginInterface {
     });
   }
 
-  private async lookup(meta: Metadata): Promise<Sub[]> {
+  private async lookup(search: Search): Promise<Sub[]> {
     var found: Sub[] = [];
     var finished = false;
     var error = false;
@@ -148,11 +150,11 @@ class SubdivxOrigin implements OriginInterface {
 
     this.actualPage = 1;
 
-    console.log(chalk.gray('Searching for ... ') + chalk.yellow(meta.search.toString()));
+    console.log(chalk.gray('Searching for ... ') + chalk.yellow(search.searchString));
 
     while (!finished) {
       await new Promise<Sub[]>((resolve, reject) => {
-        this.getPage(meta).then((subs: Sub[]) => {
+        this.getPage(search).then((subs: Sub[]) => {
           found = found.concat(subs);
           this.actualPage++;
           resolve()
@@ -169,8 +171,8 @@ class SubdivxOrigin implements OriginInterface {
   }
 
 
-  search(meta: Metadata):  Promise<Sub[]> {
-    return this.lookup(meta);
+  search(search: Search):  Promise<Sub[]> {
+    return this.lookup(search);
   }
 
   download(sub, dest): Promise<void> {

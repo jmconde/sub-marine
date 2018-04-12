@@ -6,11 +6,15 @@ const unrar = require("node-unrar-js");
 const path_1 = require("path");
 const unzip = require("unzip");
 const logger_1 = require("./logger");
+const origin_types_1 = require("./origin-types");
 class Commons {
+    static numRightPad(value, num = 2) {
+        return new String(Math.pow(10, num) + value).substring(1);
+    }
     static getFileBaseTitle(sub, filename, index = 0) {
         var indexStr = index > 0 ? `.${index}` : '';
         var ext = filename.split('.').pop();
-        var title = sub.meta.filename.substring(0, sub.meta.filename.lastIndexOf('.'));
+        var title = sub.file.filename;
         return `${title}${indexStr}.${sub.lang}.${ext}`;
     }
     static isSubtitle(filename) {
@@ -102,16 +106,17 @@ class Commons {
         }
         return title.join(' ');
     }
-    static getSearchText(meta) {
-        var normalize = num => new String(100 + num).substring(1);
-        if (meta.type === 'movie') {
-            return `${meta.title} ${meta.year}`;
+    static getSearchText(file) {
+        var title = file.title;
+        var normalize = Commons.numRightPad;
+        if (file.type === origin_types_1.default.FILE.MOVIE) {
+            return `${title} ${file.year}`;
         }
-        return `${meta.title} S${normalize(meta.season)}E${normalize(meta.episode)}`;
+        return `${title} S${normalize(file.season)}E${normalize(file.episode)}`;
     }
     static hash() { }
 }
-Commons.log = logger_1.default.Instance;
+Commons.log = logger_1.default.getInstance();
 Commons.REGEX = {
     TOKENIZE: /([a-zA-Z0-9\[\]\(\)]{2,}|([a-zA-Z0-9]\.)+)/g,
     SEASON_EPISODE: /[s|S]\d{2}[e|E]\d{2}/,

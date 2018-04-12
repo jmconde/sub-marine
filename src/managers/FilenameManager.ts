@@ -6,42 +6,50 @@ import Metadata from '../interfaces/metadataInterface';
 import Commons from '../utils/commons';
 import chalk from 'chalk';
 import Logger from '../utils/logger';
+import FileInfo from '../interfaces/fileInfoInterface';
+import TYPES from '../utils/origin-types';
 
-export default class FilenameManager implements Manager {
-  ID:string = 'file';
-  private log = Logger.Instance;
+export default class FilenameManager implements Manager{
+  ID = 'fileInfo';
+  private log = Logger.getInstance();
 
-  fill(meta: Metadata): Promise<Metadata> {
-    var filepath = meta.path;
-    var tokens = Commons.tokenize(Commons.getFilename(filepath));
+  fill(filePath): Promise<FileInfo> {
+    var tokens = Commons.tokenize(Commons.getFilename(filePath));
 
     console.log(chalk.grey('getting metadata from Filename...'));
 
-    return new Promise<Metadata>((resolve, reject) => {
-      var type: string = 'movie';
+    return new Promise<FileInfo>((resolve, reject) => {
+      var type: string = TYPES.FILE.MOVIE;
+      var lastIndex = filePath.lastIndexOf(sep);
       var matcher: RegExpMatchArray,
         data: string,
         season: number,
         episode: number,
         title: string,
         year: string,
-        filename: string;
+        filename: string,
+        extension: string,
+        fullName: string,
+        path: string;
 
-      if (!pathExistsSync(filepath)) {
+      if (!pathExistsSync(filePath)) {
         reject('File does not exist.')
         return;
       }
-      filename = filepath.substring(filepath.lastIndexOf(sep) + 1);
+      fullName = filePath.substring(lastIndex + 1);
+      filename = fullName.substring(0, fullName.lastIndexOf('.'))
+      extension = fullName.split('.').pop();
+      path = filePath.substring(0, lastIndex)
       matcher = filename.match(Commons.REGEX.SEASON_EPISODE);
       if (matcher) {
-        type = 'series';
+        type = TYPES.FILE.EPISODE;
       } else {
         matcher = filename.match(Commons.REGEX.YEAR);
       }
       data = matcher[0].toUpperCase();
       title = filename.substring(0, matcher.index);
 
-      if (type === 'series') {
+      if (type === TYPES.FILE.EPISODE) {
         season = Number(data.substring(1, 3));
         episode = Number(data.substring(4));
         matcher = title.match(Commons.REGEX.YEAR);
@@ -57,19 +65,20 @@ export default class FilenameManager implements Manager {
       title = title.replace(/\.|\(\)/g, ' ').trim();
       this.log.colored('debug', 'greenBright', title);
 
-      var meta: Metadata = {
+      var info: FileInfo = {
+        fullPath: filePath,
+        filename,
+        fullName,
+        path,
+        extension,
         title,
         type,
-        filename,
-        path: filepath,
         season,
         episode,
         year
       };
 
-      meta.search = Commons.getSearchText(meta);
-
-      resolve(meta);
+      resolve(info);
     });
   }
 }

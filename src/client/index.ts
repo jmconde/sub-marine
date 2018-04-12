@@ -12,7 +12,7 @@ import Logger from '../utils/logger';
 
 prompt.registerPrompt('directory', selectDir);
 
-const log = Logger.Instance;
+const log = Logger.getInstance();
 log.setLevel('all');
 
 const FILES =  {
@@ -46,7 +46,7 @@ const subOptions = subs => {
     name: 'sub',
     message: `Select a sub to download: [${subs.length} Found]`,
     choices: subs.map((sub: Sub, i: number) => {
-      return {name: `${i + 1}) ${sub.meta.filename} ${sub.lang} (Score: ${sub.score})`, value: sub}
+      return {name: `${i + 1}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub}
     }).concat([new Separator()])
   }
 };

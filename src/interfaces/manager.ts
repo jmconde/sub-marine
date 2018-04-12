@@ -1,6 +1,7 @@
 import Metadata from "./metadataInterface";
+import FileInfo from "./fileInfoInterface";
 
 export default interface Manager {
   ID:string;
-  fill(meta: Metadata): Promise<Metadata>;
+  fill(info: FileInfo): Promise<Metadata>;
 }

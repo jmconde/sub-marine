@@ -4,7 +4,7 @@ const mapper_1 = require("./mapper");
 class TMDbMapper extends mapper_1.default {
     constructor() {
         super(...arguments);
-        this.MAP_DEF = {
+        this.DEFAULT = {
             plot: 'overview',
             rated: 'vote_average',
             year: d => (d.release_date && d.release_date.substring(0, 4)) || (d.first_air_date && d.first_air_date.substring(0, 4)),

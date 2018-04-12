@@ -3,12 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const apiManager_1 = require("./apiManager");
 const chalk_1 = require("chalk");
 const OMDBMapper_1 = require("./mappers/OMDBMapper");
+const origin_types_1 = require("../utils/origin-types");
+const logger_1 = require("../utils/logger");
 class OMDBManager extends apiManager_1.default {
     constructor() {
         super(...arguments);
         this.ID = 'omdb';
         this.URL = 'http://www.omdbapi.com';
         this.mapper = new OMDBMapper_1.default();
+        this.MOVIE = 'movie';
+        this.RESPONSE_OK = 'True';
     }
     // async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
     //   return super.get(path, query, meta).then(json => {
@@ -16,47 +20,50 @@ class OMDBManager extends apiManager_1.default {
     //   });
     // }
     check(json) {
-        return json.Response === 'True' ? 0 : 1;
+        return json.Response === this.RESPONSE_OK ? 0 : 1;
     }
-    fill(meta) {
+    fill(info) {
         console.log(chalk_1.default.grey('getting metadata from OMDB...'));
-        var promise;
-        if (meta.type === 'movie') {
-            promise = this.getMovie(meta).then(movieMeta => Object.assign(meta, movieMeta));
+        this.log.cDebug(logger_1.default.BLUE_BRIGHT, origin_types_1.default.FILE.EPISODE);
+        this.log.cDebug(logger_1.default.BLUE_BRIGHT, info);
+        if (info.type === origin_types_1.default.FILE.MOVIE) {
+            return this.getMovie(info.title);
         }
-        else if (meta.type === 'series') {
-            promise = this.getSeries(meta).then(seriesMeta => {
-                meta = Object.assign(meta, seriesMeta);
-                return this.getEpisode(meta);
+        else if (info.type === origin_types_1.default.FILE.EPISODE) {
+            return this.getSeries(info.title)
+                .then(seriesMeta => {
+                return this.getEpisode(info.title, info.season, info.episode).then(episodeMeta => {
+                    seriesMeta.episodeData = episodeMeta;
+                    return seriesMeta;
+                });
             });
         }
         else {
-            Promise.reject('No type');
+            return Promise.reject('OMDB: No type');
         }
-        return promise;
     }
-    getMovie(meta) {
+    getMovie(title) {
         var qParams = {
-            t: meta.title,
+            t: title,
             type: 'movie'
         };
-        return this.get('/', qParams, meta);
+        return this.get('/', qParams, origin_types_1.default.FILE.MOVIE);
     }
-    getSeries(meta) {
+    getSeries(title) {
         var qParams = {
-            t: meta.title,
+            t: title,
             type: 'series'
         };
-        return this.get('/', qParams, meta);
+        return this.get('/', qParams, origin_types_1.default.FILE.SERIES);
     }
-    getEpisode(meta) {
+    getEpisode(title, season, episode) {
         var qParams = {
-            t: meta.title,
+            t: title,
             type: 'episode',
-            Season: meta.season,
-            Episode: meta.episode
+            Season: season,
+            Episode: episode
         };
-        return this.get('/', qParams, meta);
+        return this.get('/', qParams, origin_types_1.default.FILE.SERIES);
     }
 }
 exports.default = OMDBManager;

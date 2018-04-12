@@ -14,31 +14,31 @@ const uriTemplate = require("uri-templates");
 const logger_1 = require("../utils/logger");
 class ApiManager {
     constructor() {
-        this.log = logger_1.default.Instance;
+        this.log = logger_1.default.getInstance();
     }
-    get(path = '', query, meta) {
+    get(path = '', query, type) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.makeRequest(this.getUrl(query, path), 'get', meta)
+            return this.makeRequest(this.getUrl(query, path), 'get')
                 .then(json => {
                 var code = this.check(json);
                 this.log.colored('debug', 'magentaBright', json);
-                return (code === 0) ? this.mapper.map(json, meta.type) : Promise.reject('Error ' + code);
+                return (code === 0) ? this.mapper.map(json, type) : Promise.reject('Error ' + code);
             });
         });
     }
-    rawGet(path = '', query) {
+    rawGet(path = '', query, type) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.makeRequest(this.getUrl(query, path), 'get');
         });
     }
-    list(path = '', query, meta) {
+    list(path = '', query, type) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.makeRequest(this.getUrl(query, path), 'get', meta)
+            return this.makeRequest(this.getUrl(query, path), 'get')
                 .then(json => {
                 if (this.LIST_DATA_PATH) {
                     json = json[this.LIST_DATA_PATH];
                 }
-                return json.map(d => this.mapper.map(d, meta.type));
+                return json.map(d => this.mapper.map(d, type));
             });
         });
     }
@@ -60,7 +60,9 @@ class ApiManager {
         query = query || {};
         if (this.ID) {
             token = this.getToken(this.ID);
-            query[token.name] = token.token;
+            if (token) {
+                query[token.name] = token.token;
+            }
         }
         return new uriTemplate(this.URL + path + '{?params*}').fillFromObject({ params: query });
         ;
@@ -68,7 +70,7 @@ class ApiManager {
     getPath(path, data) {
         return new uriTemplate(path).fill(data);
     }
-    makeRequest(url, method = 'get', meta, body) {
+    makeRequest(url, method = 'get', body) {
         // var options = new URL(url);
         var postData;
         var data = [];

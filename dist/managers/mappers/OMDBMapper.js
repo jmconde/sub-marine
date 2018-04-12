@@ -4,7 +4,7 @@ const mapper_1 = require("./mapper");
 class OMDBMapper extends mapper_1.default {
     constructor() {
         super(...arguments);
-        this.MAP_DEF = {
+        this.DEFAULT = {
             title: 'Title',
             year: 'Year',
             rated: 'Rated',

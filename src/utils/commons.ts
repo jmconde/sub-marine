@@ -7,9 +7,11 @@ import * as unzip from 'unzip';
 import Metadata from '../interfaces/metadataInterface';
 import Sub from '../interfaces/subInterface';
 import Logger from './logger';
+import FileInfo from '../interfaces/fileInfoInterface';
+import TYPES from './origin-types';
 
 export default class Commons {
-  private static log: Logger = Logger.Instance;
+  private static log: Logger = Logger.getInstance();
 
   static REGEX = {
     TOKENIZE: /([a-zA-Z0-9\[\]\(\)]{2,}|([a-zA-Z0-9]\.)+)/g,
@@ -17,10 +19,15 @@ export default class Commons {
     SEASON_EPISODE_OTHER: /\d{1,2}x\d{1,2}/,
     YEAR: /(\.|\s|\()\d{4}(\.|\s|\))/
   }
+
+  static numRightPad(value: number, num: number = 2) {
+    return new String (Math.pow(10, num) + value).substring(1);
+  }
+
   static getFileBaseTitle(sub: Sub, filename: string, index: number = 0): string {
     var indexStr = index > 0 ? `.${index}` : '';
     var ext =  filename.split('.').pop();
-    var title = sub.meta.filename.substring(0, sub.meta.filename.lastIndexOf('.'));
+    var title = sub.file.filename;
 
     return `${title}${indexStr}.${sub.lang}.${ext}`;
   }
@@ -127,14 +134,15 @@ export default class Commons {
     return title.join(' ');
   }
 
-  static getSearchText(meta: Metadata): string {
-    var normalize = num => new String (100 + num).substring(1);
+  static getSearchText(file: FileInfo): string {
+    var title = file.title;
+    var normalize = Commons.numRightPad;
 
-    if (meta.type === 'movie') {
-      return `${meta.title} ${meta.year}`;
+    if (file.type === TYPES.FILE.MOVIE) {
+      return `${title} ${file.year}`;
     }
 
-    return `${meta.title} S${normalize(meta.season)}E${normalize(meta.episode)}`;
+    return `${title} S${normalize(file.season)}E${normalize(file.episode)}`;
   }
 
   static hash () {}
