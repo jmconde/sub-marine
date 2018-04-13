@@ -43,7 +43,7 @@ class OMDBManager extends apiManager_1.default {
                     .then(seriesMeta => {
                     return this.getEpisode(info.title, info.season, info.episode).then(episodeMeta => {
                         seriesMeta.episodeData = episodeMeta;
-                        return seriesMeta;
+                        return episodeMeta && seriesMeta;
                     });
                 });
             }

@@ -36,7 +36,7 @@ export default class OMDBManager extends ApiManager {
           return this.getEpisode(info.title, info.season, info.episode).then(episodeMeta => {
             seriesMeta.episodeData = episodeMeta;
 
-            return seriesMeta;
+            return episodeMeta && seriesMeta;
           })
         });
     } else {

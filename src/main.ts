@@ -14,7 +14,6 @@ import Commons from './utils/commons';
 import OriginFactory from './origins/originFactory';
 import FilenameManager from './managers/FilenameManager';
 import Logger from './utils/logger';
-import MetadataStore from './utils/matadataStore';
 import FileInfo from './interfaces/fileInfoInterface';
 import Search from './interfaces/searchInterface';
 import TYPES from './utils/origin-types';
@@ -24,12 +23,10 @@ export default class SubMarine {
   private OMDB = new OMDBManager();
   private TMDb = new TMDbManager();
   private TVMaze = new TVMazeManager();
-  private log = Logger.getInstance();
+  private log = Logger.getInstance('error');
   private Filename = new FilenameManager();
-  private store: MetadataStore = MetadataStore.Instance;
 
-  async get(originType: String, filepath: string, langs: string[]): Promise<Sub[]> {
-    let origin: OriginInterface;
+  async get(originTypes: string[], filepath: string, langs: string[]): Promise<Sub[]> {
     let promise: Promise<any> = Promise.resolve();
     var subs: Sub[] = [];
     var search: Search;
@@ -39,26 +36,17 @@ export default class SubMarine {
       var metadataMap = await this.getMetadata(info);
       this.log.cDebug(Logger.YELLOW_BRIGHT, search)
 
-      subs = await this.getSubs([OriginFactory.getOrigin(TYPES.ORIGIN.SUBDIVX), OriginFactory.getOrigin(TYPES.ORIGIN.OPEN_SUBTITLES)], metadataMap, info);
+      subs = await this.getSubs(this.getOrigins(originTypes), metadataMap, info);
       resolve(subs);
 
     });
   }
 
-
-
-    // origin =  OriginFactory.getOrigin(originType);
-
-    // if (origin.authRequired) {
-    //   promise = promise.then(() => origin.authenticate());
-    // }
-
-    // promise = this.getMetadata(filepath)
-    //   .then(meta => origin.search(meta, langs));
-
-  // promise = promise.then(() => [])
-  //   // promise.then((meta) => );
-  //   // promise = promise.catch(() => []);
+  getOrigins(types: string[]): OriginInterface[] {
+    return types.map<OriginInterface>(type => {
+      return OriginFactory.getOrigin(type);
+    });
+  }
 
   async getSubs(origins: OriginInterface[],  metadataMap: Map<string, Metadata>, info: FileInfo) : Promise<Sub[]> {
     var promises = [];
@@ -66,10 +54,12 @@ export default class SubMarine {
       fileInfo: info,
       searchString: Commons.getSearchText(info),
       langs: [],
-      metadata: null
+      metadata: null,
+      registry: new Map<string, string[]>()
     };
-    console.log('GET SUBIS::::::::::::::::::::::::::::::');
+
     origins.forEach(origin => {
+      search.registry.set(origin.ID, []);
       metadataMap.forEach((meta, key) => {
         var promise = Promise.resolve();
          if (origin.authRequired) {
@@ -91,7 +81,7 @@ export default class SubMarine {
           urlMap.set(val.url, '=oOo=');
         }
         return acc;
-      }, []).filter(s => typeof s.url === 'string');
+      }, [])//.filter(s => typeof s.url === 'string');
       return Promise.resolve<Sub[]>(subs);
     });
   }
@@ -100,18 +90,21 @@ export default class SubMarine {
     return this.Filename.fill(normalize(path))
       .then(fileInfo => {
         this.log.debug(chalk.blueBright(JSON.stringify(fileInfo, null, 2)));
-        this.store.set(this.Filename.ID, fileInfo);
         return fileInfo;
       });
   }
 
   async getMetadata(info: FileInfo): Promise<Map<string, Metadata>> {
     var map: Map<string, Metadata> = new Map();
+    var omdb: Metadata = await this.OMDB.fill(info);
+    var tmdb: Metadata = await this.TMDb.fill(info);
+    var tvmaze: Metadata;
 
-    map.set(this.OMDB.ID, await this.OMDB.fill(info));
-    map.set(this.TMDb.ID, await this.TMDb.fill(info));
+    if (omdb) map.set(this.OMDB.ID, omdb);
+    if (tmdb) map.set(this.TMDb.ID, tmdb);
     if (info.type === TYPES.FILE.EPISODE) {
-      map.set(this.TVMaze.ID, await this.TVMaze.fill(info));
+      tvmaze = await this.TVMaze.fill(info);
+      if (tvmaze) map.set(this.TVMaze.ID, tvmaze);
     }
 
     return Promise.resolve(map);
@@ -123,7 +116,7 @@ export default class SubMarine {
     var found = false;
     var type;
 
-    path = path || sub.meta.path.substring(0, sub.meta.path.lastIndexOf(sep));
+    path = path || sub.file.path;
 
     return new Promise<void>((resolve, reject) => {
       if (!sub.url) {
@@ -159,11 +152,11 @@ export default class SubMarine {
           }
 
           promise.then(() => {
+            del.sync(tempFile);
             console.log(chalk.gray('Process finished'));
-            del(tempFile);
             resolve();
           }).catch(e => {
-            del(tempFile);
+            del.sync(tempFile);
             this.log.error(chalk.red('Error!!', e));
             reject();
           })

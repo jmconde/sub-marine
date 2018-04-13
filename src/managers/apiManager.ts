@@ -7,6 +7,7 @@ import Manager from '../interfaces/manager';
 import Metadata from '../interfaces/metadataInterface';
 import Logger from '../utils/logger';
 import Mapper from './mappers/mapper';
+import chalk from 'chalk';
 
 export default abstract class ApiManager implements Manager {
   abstract URL:string;
@@ -30,7 +31,12 @@ export default abstract class ApiManager implements Manager {
       .then(json => {
         var code: number = this.check(json);
         this.log.colored('debug', 'magentaBright', json);
-        return (code === 0) ? this.mapper.map(json, type) : Promise.reject<Metadata>('Error ' +  code);
+        if (code === 0)
+          return this.mapper.map(json, type)
+        else {
+          console.log(chalk.gray('not found', path));
+          return undefined;
+        }
       });
   }
 

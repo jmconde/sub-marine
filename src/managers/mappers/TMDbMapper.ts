@@ -13,7 +13,8 @@ export default class TMDbMapper extends Mapper {
       id: 'id',
       lang: 'original_language',
       imdbID: 'external_ids.imdb_id',
-      source: () => 'tmdb'
+      source: () => 'tmdb',
+      type: () => TYPES.FILE.MOVIE
     });
     this.add('SERIES', {
       id: 'id',
@@ -24,7 +25,8 @@ export default class TMDbMapper extends Mapper {
       lang: 'original_language',
       // rated: 'vote_average',
       year: d => (d.first_air_date && d.first_air_date.substring(0, 4)),
-      source: () => 'tmdb'
+      source: () => 'tmdb',
+      type: () => TYPES.FILE.SERIES
     });
     this.add('EPISODE', {
       plot: 'overview',
@@ -34,7 +36,8 @@ export default class TMDbMapper extends Mapper {
       id: 'id',
       lang: 'original_language',
       imdbID: 'external_ids.imdb_id',
-      source: () => 'tmdb'
+      source: () => 'tmdb',
+      type: () => TYPES.FILE.EPISODE
     });
   }
 }

@@ -19,24 +19,34 @@ const origin_types_1 = require("../utils/origin-types");
 const logger_1 = require("../utils/logger");
 inquirer_1.prompt.registerPrompt('directory', selectDir);
 const log = logger_1.default.getInstance();
-log.setLevel('all');
+const pageSize = 15;
+log.setLevel('error');
 const FILES = {
     type: 'directory',
     name: 'path',
+    options: {
+        displayHidden: true
+    },
+    pageSize,
     message: 'Media files path:',
     basePath: 'd:/downloads/' //process.cwd()
 };
 const OPTIONS = [{
-        type: 'list',
+        type: 'checkbox',
         name: 'origin',
+        pageSize,
         message: 'Select a choice:',
-        choices: [{ name: 'SubDivX', value: origin_types_1.default.ORIGIN.SUBDIVX }, { name: 'OpenSubtitles', value: origin_types_1.default.ORIGIN.OPEN_SUBTITLES }]
+        choices: [
+            { name: 'SubDivX', value: origin_types_1.default.ORIGIN.SUBDIVX, checked: true },
+            { name: 'OpenSubtitles', value: origin_types_1.default.ORIGIN.OPEN_SUBTITLES, checked: true }
+        ]
     }];
 const fileOpts = files => {
     return {
         type: 'list',
         name: 'file',
         message: `Select a file to download: [${files.length} Found]`,
+        pageSize,
         choices: files.map((file, i) => {
             return { name: `${i + 1}) ` + file.substring(file.lastIndexOf(path_1.sep) + 1), value: file };
         }).concat([{ name: '<< Go back >>', value: '..' }])
@@ -47,8 +57,9 @@ const subOptions = subs => {
         type: 'list',
         name: 'sub',
         message: `Select a sub to download: [${subs.length} Found]`,
+        pageSize,
         choices: subs.map((sub, i) => {
-            return { name: `${i + 1}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub };
+            return { name: `${i + 1}) (${sub.origin}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub };
         }).concat([new inquirer_1.Separator()])
     };
 };

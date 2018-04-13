@@ -5,18 +5,18 @@ import OpenSubtitleAuth from './opensubtitle-auth';
 import OpensubtitlesManager from './opensubtitlesManager';
 import chalk from 'chalk';
 import Logger from '../../utils/logger';
-import MetadataStore from '../../utils/matadataStore';
 import Search from '../../interfaces/searchInterface';
 import Commons from '../../utils/commons';
+import TYPES from '../../utils/origin-types';
 
 export default class OpenSubtitlesOrigin implements OriginInterface {
+  readonly ID = TYPES.ORIGIN.OPEN_SUBTITLES;
   private auth: OpenSubtitleAuth;
   private readonly ENDPOINT: string = 'https://api.opensubtitles.org/xml-rpc';
   readonly authRequired = true;
   private authenticated: boolean;
   private manager: OpensubtitlesManager;
   private log: Logger = Logger.getInstance();
-  private store: MetadataStore = MetadataStore.Instance;
 
   constructor(username: string, password: string, lang: string, agent: string) {
     this.setAuthData(username, password, lang, agent);
@@ -26,16 +26,29 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
   search(search: Search):  Promise<Sub[]> {
     var meta = search.metadata;
     var OMDBMeta: Metadata;
+    var registry = search.registry.get(TYPES.ORIGIN.OPEN_SUBTITLES);
 
     return new Promise<Sub[]>((resolve, reject) => {
-      console.log(chalk.gray('Searching for ... ') + chalk.yellow(`${meta.title} ${meta.season} ${meta.episode}`));
-
-      if (!meta.imdbID) {
-        OMDBMeta = this.store.get('omdb');
-        meta.imdbID = OMDBMeta.imdbID;
+      var imdbId;
+      if (meta.type === TYPES.FILE.EPISODE && meta.episodeData && meta.episodeData.imdbID) {
+        imdbId = meta.episodeData.imdbID;
+      } else if (meta.type === TYPES.FILE.MOVIE && meta.imdbID) {
+        imdbId = meta.imdbID;
       }
+      this.log.cInfo(Logger.GREEN_BRIGHT, meta);
 
-      this.manager.call('SearchSubtitles', [{sublanguageid: 'spa, eng', imdbid: meta.imdbID.substring(2)}])
+      if (!imdbId) {
+        console.log(chalk.gray('OpenSubtitles: No Episode or Movie IMDB ID.'));
+        resolve([]);
+        return;
+      } else  if (registry.indexOf(imdbId) !== -1) {
+        resolve([]);
+        return;
+      }
+      console.log(chalk.gray('Opensubtitles: Searching for ... ') + chalk.yellow(`${search.searchString} - IMDB ID: ${imdbId}`));
+      registry.push(meta.imdbID);
+
+      this.manager.call('SearchSubtitles', [{sublanguageid: 'spa, eng', imdbid: imdbId.substring(2)}])
         .then(response => {
           if (response.status === '200 OK') {
             resolve(response.data.map(d => {

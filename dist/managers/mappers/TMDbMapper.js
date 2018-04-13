@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mapper_1 = require("./mapper");
+const origin_types_1 = require("../../utils/origin-types");
 class TMDbMapper extends mapper_1.default {
     constructor() {
         super();
@@ -12,7 +13,8 @@ class TMDbMapper extends mapper_1.default {
             id: 'id',
             lang: 'original_language',
             imdbID: 'external_ids.imdb_id',
-            source: () => 'tmdb'
+            source: () => 'tmdb',
+            type: () => origin_types_1.default.FILE.MOVIE
         });
         this.add('SERIES', {
             id: 'id',
@@ -23,7 +25,8 @@ class TMDbMapper extends mapper_1.default {
             lang: 'original_language',
             // rated: 'vote_average',
             year: d => (d.first_air_date && d.first_air_date.substring(0, 4)),
-            source: () => 'tmdb'
+            source: () => 'tmdb',
+            type: () => origin_types_1.default.FILE.SERIES
         });
         this.add('EPISODE', {
             plot: 'overview',
@@ -33,7 +36,8 @@ class TMDbMapper extends mapper_1.default {
             id: 'id',
             lang: 'original_language',
             imdbID: 'external_ids.imdb_id',
-            source: () => 'tmdb'
+            source: () => 'tmdb',
+            type: () => origin_types_1.default.FILE.EPISODE
         });
     }
 }

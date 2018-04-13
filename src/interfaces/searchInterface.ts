@@ -6,4 +6,5 @@ export default interface Search {
   langs: string[]
   fileInfo: FileInfo;
   metadata: Metadata;
+  registry: Map<string, string[]>;
 }

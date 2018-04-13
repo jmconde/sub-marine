@@ -13,20 +13,29 @@ import Logger from '../utils/logger';
 prompt.registerPrompt('directory', selectDir);
 
 const log = Logger.getInstance();
-log.setLevel('all');
+const pageSize = 15;
+log.setLevel('error');
 
 const FILES =  {
   type: 'directory',
   name: 'path',
+  options: {
+    displayHidden: true
+  },
+  pageSize,
   message: 'Media files path:',
   basePath: 'd:/downloads/' //process.cwd()
 };
 
 const OPTIONS = [{
-  type: 'list',
+  type: 'checkbox',
   name: 'origin',
+  pageSize,
   message: 'Select a choice:',
-  choices: [{name: 'SubDivX', value: TYPES.ORIGIN.SUBDIVX}, {name: 'OpenSubtitles', value: TYPES.ORIGIN.OPEN_SUBTITLES}]
+  choices: [
+    {name: 'SubDivX', value: TYPES.ORIGIN.SUBDIVX, checked: true},
+    {name: 'OpenSubtitles', value: TYPES.ORIGIN.OPEN_SUBTITLES, checked: true}
+  ]
 }];
 
 const fileOpts = files => {
@@ -34,6 +43,7 @@ const fileOpts = files => {
   type: 'list',
     name: 'file',
     message: `Select a file to download: [${files.length} Found]`,
+    pageSize,
     choices: files.map((file: string, i: number) => {
       return {name: `${i + 1}) ` + file.substring(file.lastIndexOf(sep) + 1) , value: file}
     }).concat([{name: '<< Go back >>' , value: '..'}])
@@ -45,8 +55,9 @@ const subOptions = subs => {
     type: 'list',
     name: 'sub',
     message: `Select a sub to download: [${subs.length} Found]`,
+    pageSize,
     choices: subs.map((sub: Sub, i: number) => {
-      return {name: `${i + 1}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub}
+      return {name: `${i + 1}) (${sub.origin}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub}
     }).concat([new Separator()])
   }
 };

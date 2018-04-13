@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { appendFileSync, createReadStream, createWriteStream, readFileSync , existsSync} from 'fs';
 import * as unrar from 'node-unrar-js';
-import { sep } from 'path';
+import { sep, normalize } from 'path';
 import * as unzip from 'unzip';
 
 import Metadata from '../interfaces/metadataInterface';
@@ -53,7 +53,7 @@ export default class Commons {
 
           entry.pipe(createWriteStream(`${dest}/${fname}`)
             .on('close', () => {
-              console.log(chalk.yellow(`File '${entry.path}' extracted as ${dest}/${fname}.`));
+              console.log(chalk.yellow(`File '${entry.path}' extracted as '${normalize(dest + sep + fname)}'`));
             }));
         } else {
           entry.autodrain();
@@ -101,7 +101,7 @@ export default class Commons {
             }
             //  // Uint8Array
             appendFileSync(`${dest}/${filename}`, new Buffer(buffer));
-            console.log(chalk.yellow(`File '${file.fileHeader.name}' extracted as '${dest}/${filename}'.`));
+            console.log(chalk.yellow(`File '${file.fileHeader.name}' extracted as '${normalize(dest + sep + filename)}'`));
           }
         });
         resolve();

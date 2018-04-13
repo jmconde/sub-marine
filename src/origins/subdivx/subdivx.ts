@@ -8,8 +8,10 @@ import Sub from '../../interfaces/subInterface';
 import Metadata from '../../interfaces/metadataInterface';
 import Logger from '../../utils/logger';
 import Search from '../../interfaces/searchInterface';
+import TYPES from '../../utils/origin-types';
 
 class SubdivxOrigin implements OriginInterface {
+  readonly ID = TYPES.ORIGIN.SUBDIVX;
   private log: Logger = Logger.getInstance();
   private searchText: String;
   private actualPage: number;
@@ -21,7 +23,6 @@ class SubdivxOrigin implements OriginInterface {
   private readonly barraSelector = '#menu_detalle_buscador';
   private readonly titleSelector = '#menu_titulo_buscador a.titulo_menu_izq';
   readonly authRequired = false;
-
 
   private readonly RATING = {
     'img/calif0.gif': 0,
@@ -150,7 +151,7 @@ class SubdivxOrigin implements OriginInterface {
 
     this.actualPage = 1;
 
-    console.log(chalk.gray('Searching for ... ') + chalk.yellow(search.searchString));
+    console.log(chalk.gray('SubdivX: Searching for ... ') + chalk.yellow(search.searchString));
 
     while (!finished) {
       await new Promise<Sub[]>((resolve, reject) => {
@@ -172,6 +173,12 @@ class SubdivxOrigin implements OriginInterface {
 
 
   search(search: Search):  Promise<Sub[]> {
+    var registry = search.registry.get(TYPES.ORIGIN.OPEN_SUBTITLES);
+
+    if (!search || !search.searchString || search.searchString.trim() === '' || registry.indexOf(search.searchString) !== -1) {
+      return Promise.resolve<Sub[]>([]);
+    }
+    registry.push(search.searchString);
     return this.lookup(search);
   }
 

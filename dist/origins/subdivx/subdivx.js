@@ -13,8 +13,10 @@ const chalk_1 = require("chalk");
 const cheerio = require("cheerio");
 const stringScore = require("string-score");
 const logger_1 = require("../../utils/logger");
+const origin_types_1 = require("../../utils/origin-types");
 class SubdivxOrigin {
     constructor() {
+        this.ID = origin_types_1.default.ORIGIN.SUBDIVX;
         this.log = logger_1.default.getInstance();
         this.downloadUrl = 'http://www.subdivx.com/bajar.php?id=';
         this.subSelector = '#buscador_detalle';
@@ -138,7 +140,7 @@ class SubdivxOrigin {
                 }
             };
             this.actualPage = 1;
-            console.log(chalk_1.default.gray('Searching for ... ') + chalk_1.default.yellow(search.searchString));
+            console.log(chalk_1.default.gray('SubdivX: Searching for ... ') + chalk_1.default.yellow(search.searchString));
             while (!finished) {
                 yield new Promise((resolve, reject) => {
                     this.getPage(search).then((subs) => {
@@ -158,6 +160,11 @@ class SubdivxOrigin {
         });
     }
     search(search) {
+        var registry = search.registry.get(origin_types_1.default.ORIGIN.OPEN_SUBTITLES);
+        if (!search || !search.searchString || search.searchString.trim() === '' || registry.indexOf(search.searchString) !== -1) {
+            return Promise.resolve([]);
+        }
+        registry.push(search.searchString);
         return this.lookup(search);
     }
     download(sub, dest) {

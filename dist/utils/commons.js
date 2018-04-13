@@ -35,7 +35,7 @@ class Commons {
                     }
                     entry.pipe(fs_1.createWriteStream(`${dest}/${fname}`)
                         .on('close', () => {
-                        console.log(chalk_1.default.yellow(`File '${entry.path}' extracted as ${dest}/${fname}.`));
+                        console.log(chalk_1.default.yellow(`File '${entry.path}' extracted as '${path_1.normalize(dest + path_1.sep + fname)}'`));
                     }));
                 }
                 else {
@@ -79,7 +79,7 @@ class Commons {
                         }
                         //  // Uint8Array
                         fs_1.appendFileSync(`${dest}/${filename}`, new Buffer(buffer));
-                        console.log(chalk_1.default.yellow(`File '${file.fileHeader.name}' extracted as '${dest}/${filename}'.`));
+                        console.log(chalk_1.default.yellow(`File '${file.fileHeader.name}' extracted as '${path_1.normalize(dest + path_1.sep + filename)}'`));
                     }
                 });
                 resolve();

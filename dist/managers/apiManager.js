@@ -12,6 +12,7 @@ const http_1 = require("http");
 const querystring_1 = require("querystring");
 const uriTemplate = require("uri-templates");
 const logger_1 = require("../utils/logger");
+const chalk_1 = require("chalk");
 class ApiManager {
     constructor() {
         this.log = logger_1.default.getInstance();
@@ -22,7 +23,12 @@ class ApiManager {
                 .then(json => {
                 var code = this.check(json);
                 this.log.colored('debug', 'magentaBright', json);
-                return (code === 0) ? this.mapper.map(json, type) : Promise.reject('Error ' + code);
+                if (code === 0)
+                    return this.mapper.map(json, type);
+                else {
+                    console.log(chalk_1.default.gray('not found', path));
+                    return undefined;
+                }
             });
         });
     }

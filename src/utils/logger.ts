@@ -49,7 +49,6 @@ export default class Logger {
     this.off = this.logger.off;
     this.log = this.logger.log;
     this.getLevel = this.logger.getLevel;
-    console.log(chalk.greenBright(`New Logger instance: ${level}`));
   }
 
   setLevel(level: string) {

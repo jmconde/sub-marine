@@ -5,6 +5,7 @@ import FileInfo from "./fileInfoInterface";
 import Search from "./searchInterface";
 
 interface OriginInterface {
+  readonly ID: string;
   readonly authRequired: boolean;
   authenticate?(): Promise<any>;
   logout?(data: AuthDataInterface): Promise<any>;
