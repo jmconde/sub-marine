@@ -2,14 +2,14 @@ import Metadata from "./metadataInterface";
 import FileInfo from "./fileInfoInterface";
 
 interface Sub {
-  description?:String;
+  description?:string;
   rating?: Number;
   downloads?: Number;
-  format?: String;
-  uploader?: String;
+  format?: string;
+  uploader?: string;
   dateUpload?: Date;
-  url?: String;
-  lang?: String;
+  url?: string;
+  lang?: string;
   score?: Number,
   origin?: string,
   group?: string,

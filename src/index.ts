@@ -3,15 +3,15 @@ import TYPES from './utils/origin-types';
 import Logger from './utils/logger';
 
 var submarine = new SubMarine();
-var filename = 'd:\\downloads\\.test\\Braindead.S01E01.HDTV.x264-LOL[eztv].mkv';
-// var filename =  'd:/downloads/test/Supernatural.S13E16.720p.HDTV.x264-worldmkv[eztv].mkv';
-// var filename =  'd:/downloads/Indiana.Jones.And.The.Raiders.Of.The.Lost.Ark.1981.1080p.BluRay.H264.AAC-RARBG/Indiana.Jones.And.The.Raiders.Of.The.Lost.Ark.1981.1080p.BluRay.H264.AAC-RARBG.mp4';
-// var filename =  'd:/downloads/Indiana.Jones.And.The.Raiders.Of.The.Lost.Ark.1981.1080p.BluRay.H264.AAC-RARBG/Indiana.Jones.And.The.Raiders.Of.The.Lost.Ark.1981.1080p.BluRay.H264.AAC-RARBG.mp4';
+// var filename = 'd:\\downloads\\.test\\Chicago.Fire.S01E03.HDTV.x264-LOL.[VTV].mp4';
+var filename = 'd:\\downloads\\.test\\Accident.Man.2018.720p.BluRay.x264-[YTS.AG].mp4';
+
 const log = Logger.getInstance();
 
 submarine.get(TYPES.ORIGIN.OPEN_SUBTITLES, filename, [])
   .then(subs => {
-    log.info("Total length: ", subs.length);
+
+    log.cInfo(Logger.BLUE_BRIGHT ,"Total length: ", subs.length);
 
     subs.map(sub => {
       log.info(`(${sub.origin}) ${sub.meta.title} -> ${sub.url}`)

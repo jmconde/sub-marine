@@ -22,29 +22,27 @@ class Logger {
     setLevel(level) {
         this.logger.setLevel(level);
     }
-    colored(level, color, msg) {
-        if (util_1.isObject(msg)) {
-            msg = JSON.stringify(msg, null, 2);
-        }
-        this[level](chalk_1.default[color](msg));
+    colored(level, color, ...msg) {
+        msg = msg.map(d => util_1.isObject(d) ? JSON.stringify(d, null, 2) : d);
+        this[level](chalk_1.default[color](...msg));
     }
-    cInfo(color, msg) {
-        this.colored('info', color, msg);
+    cInfo(color, ...msg) {
+        this.colored('info', color, ...msg);
     }
-    cDebug(color, msg) {
-        this.colored('debug', color, msg);
+    cDebug(color, ...msg) {
+        this.colored('debug', color, ...msg);
     }
-    cTrace(color, msg) {
-        this.colored('trace', color, msg);
+    cTrace(color, ...msg) {
+        this.colored('trace', color, ...msg);
     }
-    cWarn(color, msg) {
-        this.colored('warn', color, msg);
+    cWarn(color, ...msg) {
+        this.colored('warn', color, ...msg);
     }
-    cError(color, msg) {
-        this.colored('error', color, msg);
+    cError(color, ...msg) {
+        this.colored('error', color, ...msg);
     }
-    cFatal(color, msg) {
-        this.colored('fatal', color, msg);
+    cFatal(color, ...msg) {
+        this.colored('fatal', color, ...msg);
     }
     static getInstance(level) {
         return this._instance || (this._instance = new this(level));

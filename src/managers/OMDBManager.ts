@@ -24,7 +24,7 @@ export default class OMDBManager extends ApiManager {
     return json.Response === this.RESPONSE_OK ? 0 : 1;
   }
 
-  fill(info: FileInfo): Promise<Metadata> {
+  async fill(info: FileInfo): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from OMDB...'));
     this.log.cDebug(Logger.BLUE_BRIGHT, TYPES.FILE.EPISODE)
     this.log.cDebug(Logger.BLUE_BRIGHT, info)
@@ -44,7 +44,7 @@ export default class OMDBManager extends ApiManager {
     }
   }
 
-  getMovie(title: string): Promise<Metadata> {
+  async getMovie(title: string): Promise<Metadata> {
     var qParams = {
       t: title,
       type: 'movie'
@@ -53,7 +53,7 @@ export default class OMDBManager extends ApiManager {
     return this.get('/', qParams, TYPES.FILE.MOVIE);
   }
 
-  getSeries(title: string): Promise<Metadata> {
+  async getSeries(title: string): Promise<Metadata> {
     var qParams = {
       t: title,
       type: 'series'
@@ -62,7 +62,7 @@ export default class OMDBManager extends ApiManager {
     return this.get('/', qParams, TYPES.FILE.SERIES);
   }
 
-  getEpisode(title: string, season: number, episode: number): Promise<Metadata> {
+  async getEpisode(title: string, season: number, episode: number): Promise<Metadata> {
     var qParams = {
       t: title,
       type: 'episode',
@@ -73,45 +73,3 @@ export default class OMDBManager extends ApiManager {
     return this.get('/', qParams, TYPES.FILE.SERIES);
   }
 }
-/*
-{
-    "Title": "Cars",
-    "Year": "2006",
-    "Rated": "G",
-    "Released": "09 Jun 2006",
-    "Runtime": "117 min",
-    "Genre": "Animation, Comedy, Family",
-    "Director": "John Lasseter, Joe Ranft(co-director)",
-    "Writer": "John Lasseter (original story by), Joe Ranft (original story by), Jorgen Klubien (original story by), Dan Fogelman (screenplay by), John Lasseter (screenplay by), Joe Ranft (screenplay by), Kiel Murray (screenplay by), Phil Lorin (screenplay by), Jorgen Klubien (screenplay by), Steve Purcell (additional screenplay material)",
-    "Actors": "Owen Wilson, Paul Newman, Bonnie Hunt, Larry the Cable Guy",
-    "Plot": "A hot-shot race-car named Lightning McQueen gets waylaid in Radiator Springs, where he finds the true meaning of friendship and family.",
-    "Language": "English, Italian, Japanese, Yiddish",
-    "Country": "USA",
-    "Awards": "Nominated for 2 Oscars. Another 27 wins & 28 nominations.",
-    "Poster": "https://ia.media-imdb.com/images/M/MV5BMTg5NzY0MzA2MV5BMl5BanBnXkFtZTYwNDc3NTc2._V1_SX300.jpg",
-    "Ratings": [
-        {
-            "Source": "Internet Movie Database",
-            "Value": "7.2/10"
-        },
-        {
-            "Source": "Rotten Tomatoes",
-            "Value": "74%"
-        },
-        {
-            "Source": "Metacritic",
-            "Value": "73/100"
-        }
-    ],
-    "Metascore": "73",
-    "imdbRating": "7.2",
-    "imdbVotes": "300,810",
-    "imdbID": "tt0317219",
-    "Type": "movie",
-    "DVD": "07 Nov 2006",
-    "BoxOffice": "$244,052,771",
-    "Production": "Buena Vista",
-    "Website": "http://www.carsthemovie.com",
-    "Response": "True"
-}
-*/

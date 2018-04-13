@@ -56,35 +56,33 @@ export default class Logger {
     this.logger.setLevel(level);
   }
 
-  colored (level: string, color: string, msg: any) {
-    if (isObject(msg)) {
-      msg = JSON.stringify(msg, null, 2);
-    }
-    this[level](chalk[color](msg));
+  colored (level: string, color: string, ...msg: any[]) {
+    msg = msg.map(d => isObject(d) ? JSON.stringify(d, null, 2) : d);
+    this[level](chalk[color](...msg));
   }
 
-  cInfo(color: string, msg: any) {
-    this.colored('info', color, msg);
+  cInfo(color: string, ...msg: any[]) {
+    this.colored('info', color, ...msg);
   }
 
-  cDebug(color: string, msg: any) {
-    this.colored('debug', color, msg);
+  cDebug(color: string, ...msg: any[]) {
+    this.colored('debug', color, ...msg);
   }
 
-  cTrace(color: string, msg: any) {
-    this.colored('trace', color, msg);
+  cTrace(color: string, ...msg: any[]) {
+    this.colored('trace', color, ...msg);
   }
 
-  cWarn(color: string, msg: any) {
-    this.colored('warn', color, msg);
+  cWarn(color: string, ...msg: any[]) {
+    this.colored('warn', color, ...msg);
   }
 
-  cError(color: string, msg: any) {
-    this.colored('error', color, msg);
+  cError(color: string, ...msg: any[]) {
+    this.colored('error', color, ...msg);
   }
 
-  cFatal(color: string, msg: any) {
-    this.colored('fatal', color, msg);
+  cFatal(color: string, ...msg: any[]) {
+    this.colored('fatal', color, ...msg);
   }
 
   static getInstance(level?: string): Logger {

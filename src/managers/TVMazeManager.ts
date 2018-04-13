@@ -12,7 +12,7 @@ export default class TVMazeManager extends ApiManager {
 
   mapper: Mapper = new TVMazeMapper();
 
-  fill(info: FileInfo): Promise<Metadata> {
+  async fill(info: FileInfo): Promise<Metadata> {
     console.log(chalk.grey('getting metadata from TVMaze...'));
     if (info.type === TYPES.FILE.EPISODE) {
       return this.find(info);
@@ -20,7 +20,7 @@ export default class TVMazeManager extends ApiManager {
     return Promise.resolve(null);
   }
 
-  find(info: FileInfo): Promise<Metadata> {
+  async find(info: FileInfo): Promise<Metadata> {
     var path = '/search/shows';
     var q = {
       q: info.title
@@ -43,7 +43,7 @@ export default class TVMazeManager extends ApiManager {
     });
   }
 
-  getEpisode(id: string, season: number, episode: number): Promise<Metadata> {
+  async getEpisode(id: string, season: number, episode: number): Promise<Metadata> {
     var path = '/shows/{id}/episodebynumber';
     var pathData = {
       id

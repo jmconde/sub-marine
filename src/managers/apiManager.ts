@@ -25,8 +25,8 @@ export default abstract class ApiManager implements Manager {
   async post?(url: String, body: any): Promise<Metadata>;
   async put?(url: String, body: any): Promise<Metadata>;
 
-  async get(path: string = '', query: any, type?: string): Promise<Metadata> {
-    return this.makeRequest(this.getUrl(query, path), 'get')
+  async get(path: string = '', query: any, type: string): Promise<Metadata> {
+    return this.rawGet(path, query)
       .then(json => {
         var code: number = this.check(json);
         this.log.colored('debug', 'magentaBright', json);
@@ -34,11 +34,12 @@ export default abstract class ApiManager implements Manager {
       });
   }
 
-  async rawGet(path: string = '', query: any, type?: string): Promise<any> {
-    return this.makeRequest(this.getUrl(query, path), 'get');
+  async rawGet(path: string = '', query: any): Promise<any> {
+    var url =  this.getUrl(query, path);
+    return this.makeRequest(url, 'get');
   }
 
-  async list(path: string = '', query: any, type?: string): Promise<Metadata[]>{
+  async list(path: string = '', query: any, type: string): Promise<Metadata[]>{
     return this.makeRequest(this.getUrl(query, path), 'get')
       .then(json => {
         if (this.LIST_DATA_PATH) {
@@ -83,12 +84,11 @@ export default abstract class ApiManager implements Manager {
   }
 
   makeRequest (url: string, method: string = 'get', body?: any) : Promise<any>{
-    // var options = new URL(url);
     var postData;
     var data = [];
+    this.log.cInfo(Logger.MAGENTA_BRIGHT, '->', url);
 
     return new Promise<any>((resolve, reject) => {
-      this.log.debug('->', url);
       var req = request(url, res => {
         res.setEncoding('utf8');
         res.on('data', (chunk) => {

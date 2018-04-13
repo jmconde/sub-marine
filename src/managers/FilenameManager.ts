@@ -36,6 +36,7 @@ export default class FilenameManager implements Manager{
         reject('File does not exist.')
         return;
       }
+
       fullName = filePath.substring(lastIndex + 1);
       filename = fullName.substring(0, fullName.lastIndexOf('.'))
       extension = fullName.split('.').pop();

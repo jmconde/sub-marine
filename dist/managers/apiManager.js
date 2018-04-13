@@ -18,7 +18,7 @@ class ApiManager {
     }
     get(path = '', query, type) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.makeRequest(this.getUrl(query, path), 'get')
+            return this.rawGet(path, query)
                 .then(json => {
                 var code = this.check(json);
                 this.log.colored('debug', 'magentaBright', json);
@@ -26,9 +26,10 @@ class ApiManager {
             });
         });
     }
-    rawGet(path = '', query, type) {
+    rawGet(path = '', query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.makeRequest(this.getUrl(query, path), 'get');
+            var url = this.getUrl(query, path);
+            return this.makeRequest(url, 'get');
         });
     }
     list(path = '', query, type) {
@@ -71,11 +72,10 @@ class ApiManager {
         return new uriTemplate(path).fill(data);
     }
     makeRequest(url, method = 'get', body) {
-        // var options = new URL(url);
         var postData;
         var data = [];
+        this.log.cInfo(logger_1.default.MAGENTA_BRIGHT, '->', url);
         return new Promise((resolve, reject) => {
-            this.log.debug('->', url);
             var req = http_1.request(url, res => {
                 res.setEncoding('utf8');
                 res.on('data', (chunk) => {

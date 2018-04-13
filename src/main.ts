@@ -11,12 +11,13 @@ import OMDBManager from './managers/OMDBManager';
 import TMDbManager from './managers/TMDbManager';
 import TVMazeManager from './managers/TVMazeManager';
 import Commons from './utils/commons';
-import OriginFactory from './utils/factory';
+import OriginFactory from './origins/originFactory';
 import FilenameManager from './managers/FilenameManager';
 import Logger from './utils/logger';
 import MetadataStore from './utils/matadataStore';
 import FileInfo from './interfaces/fileInfoInterface';
 import Search from './interfaces/searchInterface';
+import TYPES from './utils/origin-types';
 
 export default class SubMarine {
   public text: string;
@@ -27,43 +28,21 @@ export default class SubMarine {
   private Filename = new FilenameManager();
   private store: MetadataStore = MetadataStore.Instance;
 
-  get(originType: String, filepath: string, langs: string[]): Promise<Sub[]> {
+  async get(originType: String, filepath: string, langs: string[]): Promise<Sub[]> {
     let origin: OriginInterface;
     let promise: Promise<any> = Promise.resolve();
     var subs: Sub[] = [];
     var search: Search;
 
-    return new Promise<Sub[]>((resolve, reject) => {
-      var promises = [];
+    return new Promise<Sub[]>(async (resolve, reject) => {
+      var info = await this.getFileInfo(filepath);
+      var metadataMap = await this.getMetadata(info);
+      this.log.cDebug(Logger.YELLOW_BRIGHT, search)
 
-      this.getFileInfo(filepath).then(info => {
-        search = {
-          fileInfo: info,
-          searchString: Commons.getSearchText(info),
-          langs: [],
-          metadata: null
-        };
+      subs = await this.getSubs([OriginFactory.getOrigin(TYPES.ORIGIN.SUBDIVX), OriginFactory.getOrigin(TYPES.ORIGIN.OPEN_SUBTITLES)], metadataMap, info);
+      resolve(subs);
 
-        this.log.cDebug(Logger.YELLOW_BRIGHT, search)
-
-        promises[0] = this.OMDB.fill(info);
-        promises[1] = this.TMDb.fill(info);
-        promises[2] = this.TVMaze.fill(info);
-
-        Promise.all(promises).then(r => {
-          console.log('\n\n\n');
-          console.log(r);
-          resolve(subs);
-        });
-      });
-
-
-
-      //   // var data = [
-
-      //   // ]
-      //   resolve([]);
-      });
+    });
   }
 
 
@@ -81,7 +60,43 @@ export default class SubMarine {
   //   // promise.then((meta) => );
   //   // promise = promise.catch(() => []);
 
-  getFileInfo(path: string): Promise<FileInfo> {
+  async getSubs(origins: OriginInterface[],  metadataMap: Map<string, Metadata>, info: FileInfo) : Promise<Sub[]> {
+    var promises = [];
+    var search = {
+      fileInfo: info,
+      searchString: Commons.getSearchText(info),
+      langs: [],
+      metadata: null
+    };
+    console.log('GET SUBIS::::::::::::::::::::::::::::::');
+    origins.forEach(origin => {
+      metadataMap.forEach((meta, key) => {
+        var promise = Promise.resolve();
+         if (origin.authRequired) {
+          promise = promise.then(() => origin.authenticate());
+        }
+        search.metadata = meta;
+        promises.push(promise.then(() => origin.search(search)));
+      })
+    });
+
+    return Promise.all(promises).then(r => {
+      var subs: Sub[] = [];
+      var urlMap: Map<string, string> = new Map();
+      r.forEach(s => subs = subs.concat(s));
+      subs = subs.reduce((acc, val) => {
+        var mapped = urlMap.get(val.url);
+        if (!mapped) {
+          acc.push(val);
+          urlMap.set(val.url, '=oOo=');
+        }
+        return acc;
+      }, []).filter(s => typeof s.url === 'string');
+      return Promise.resolve<Sub[]>(subs);
+    });
+  }
+
+  async getFileInfo(path: string): Promise<FileInfo> {
     return this.Filename.fill(normalize(path))
       .then(fileInfo => {
         this.log.debug(chalk.blueBright(JSON.stringify(fileInfo, null, 2)));
@@ -90,30 +105,17 @@ export default class SubMarine {
       });
   }
 
-  // getMetadata(meta: Metadata): Promise<Metadata> {
-  //   console.log(chalk.greenBright(this.log.getLevel()));
-  //   return this.TMDb.fill(meta)
-  //     .then(TMDbMeta => {
-  //       this.log.debug(chalk.yellowBright(JSON.stringify(TMDbMeta, null, 2)));
-  //       this.store.set(this.TMDb.ID, TMDbMeta);
-  //       return TMDbMeta;
-  //     })
-  //     .then(meta => this.OMDB.fill(meta))
-  //     .then(OMDBMeta => {
-  //       console.log('================================');
-  //       this.store.set(this.OMDB.ID, OMDBMeta)
-  //       return this.store.get(this.TMDb.ID);
-  //     })
+  async getMetadata(info: FileInfo): Promise<Map<string, Metadata>> {
+    var map: Map<string, Metadata> = new Map();
 
-  //     /*
-  //     .then((meta) => this.OMDB.fill(meta).catch(err => Promise.resolve<Metadata>(meta)))
-  //     .then(OMDBMeta => {
-  //       this.log.debug(chalk.greenBright(JSON.stringify(OMDBMeta, null, 2)));
-  //       this.store.set(this.OMDB.ID, OMDBMeta);
-  //       return OMDBMeta;
-  //     }) */
-  //     .catch(err => this.log.error(err));
-  // }
+    map.set(this.OMDB.ID, await this.OMDB.fill(info));
+    map.set(this.TMDb.ID, await this.TMDb.fill(info));
+    if (info.type === TYPES.FILE.EPISODE) {
+      map.set(this.TVMaze.ID, await this.TVMaze.fill(info));
+    }
+
+    return Promise.resolve(map);
+  }
 
   download(sub: Sub, path?: string): Promise<void> {
     var date = new Date().getTime();
