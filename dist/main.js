@@ -47,7 +47,7 @@ class SubMarine {
                 var info = yield this.getFileInfo(filepath);
                 var metadataMap = yield this.getMetadata(info);
                 this.log.cDebug(logger_1.default.YELLOW_BRIGHT, search);
-                subs = yield this.getSubs(this.getOrigins(originTypes), metadataMap, info);
+                subs = yield this.getSubs(this.getOrigins(originTypes), metadataMap, info, langs);
                 resolve(subs);
             }));
         });
@@ -57,13 +57,13 @@ class SubMarine {
             return originFactory_1.default.getOrigin(type);
         });
     }
-    getSubs(origins, metadataMap, info) {
+    getSubs(origins, metadataMap, info, langs) {
         return __awaiter(this, void 0, void 0, function* () {
             var promises = [];
             var search = {
                 fileInfo: info,
                 searchString: commons_1.default.getSearchText(info),
-                langs: [],
+                langs,
                 metadata: null,
                 registry: new Map()
             };
@@ -122,17 +122,19 @@ class SubMarine {
         });
     }
     download(subs, path) {
-        var promises = [];
-        if (!util_1.isArray(subs)) {
-            subs = [subs];
-        }
-        promises = subs.map(sub => {
-            return this.downloadSingleSub(sub, path);
-        });
-        return new Promise((resolve, reject) => {
-            Promise.all(promises).then(() => {
-                console.log(chalk_1.default.gray('Process finished'));
-                resolve();
+        return __awaiter(this, void 0, void 0, function* () {
+            var promises = [];
+            if (!util_1.isArray(subs)) {
+                subs = [subs];
+            }
+            promises = subs.map(sub => {
+                return this.downloadSingleSub(sub, path);
+            });
+            return new Promise((resolve, reject) => {
+                Promise.all(promises).then(() => {
+                    console.log(chalk_1.default.gray('Process finished'));
+                    resolve();
+                });
             });
         });
     }

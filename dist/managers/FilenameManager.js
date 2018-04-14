@@ -61,6 +61,7 @@ class FilenameManager {
                 title = title.replace(/\.|\(\)/g, ' ').trim();
                 this.log.colored('debug', 'greenBright', title);
                 hashes[origin_types_1.default.ORIGIN.OPEN_SUBTITLES] = yield hash_1.default.openSubtitlesHash(filePath);
+                hashes[origin_types_1.default.ORIGIN.SUBDB] = yield hash_1.default.subdbHash(filePath);
                 var info = {
                     fullPath: filePath,
                     filename,

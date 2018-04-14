@@ -33,6 +33,9 @@ class OMDBManager extends apiManager_1.default {
             else if (info.type === origin_types_1.default.FILE.EPISODE) {
                 return this.getSeries(info.title)
                     .then(seriesMeta => {
+                    if (!seriesMeta) {
+                        return;
+                    }
                     return this.getEpisode(info.title, info.season, info.episode).then(episodeMeta => {
                         seriesMeta.episodeData = episodeMeta;
                         return episodeMeta && seriesMeta;

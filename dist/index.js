@@ -16,7 +16,7 @@ const log = logger_1.default.getInstance();
 //   console.log(hash);
 // })
 var submarine = new main_1.default();
-submarine.get([origin_types_1.default.ORIGIN.SUBDIVX, origin_types_1.default.ORIGIN.OPEN_SUBTITLES], filename, [])
+submarine.get([origin_types_1.default.ORIGIN.SUBDIVX, origin_types_1.default.ORIGIN.OPEN_SUBTITLES], filename, ['es', 'en'])
     .then(subs => {
     log.cInfo(logger_1.default.BLUE_BRIGHT, "Total length: ", subs.length);
     subs.map(sub => {

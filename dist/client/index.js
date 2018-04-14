@@ -39,14 +39,14 @@ const OPTIONS = [{
         message: 'Select a choice:',
         choices: [
             { name: 'SubDivX', value: origin_types_1.default.ORIGIN.SUBDIVX, checked: true },
-            { name: 'OpenSubtitles', value: origin_types_1.default.ORIGIN.OPEN_SUBTITLES, checked: true }
+            { name: 'OpenSubtitles', value: origin_types_1.default.ORIGIN.OPEN_SUBTITLES, checked: true },
         ]
     }];
 const fileOpts = files => {
     return {
         type: 'list',
         name: 'file',
-        message: `Select a file to download: [${files.length} Found]`,
+        message: `Select a file to search subtitles for: [${files.length} Found]`,
         pageSize,
         choices: files.map((file, i) => {
             return { name: `${i + 1}) ` + file.substring(file.lastIndexOf(path_1.sep) + 1), value: file };
@@ -54,13 +54,15 @@ const fileOpts = files => {
     };
 };
 const subOptions = subs => {
+    var name = subs[0] ? subs[0].file.fullName : '';
+    var msg = subs.length ? `Select subs to download for '${name}': [${subs.length} Found]` : 'No subtitles found, please search again.';
     return {
         type: 'checkbox',
         name: 'sub',
-        message: `Select subs to download: [${subs.length} Found]`,
+        message: msg,
         pageSize,
         choices: subs.map((sub, i) => {
-            return { name: `${i + 1}) (${sub.origin}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub };
+            return { name: `${i + 1}) ${sub.lang.toUpperCase()} - ${sub.origin} (Score: ${sub.score})`, value: sub };
         }).concat([new inquirer_1.Separator()])
     };
 };
@@ -82,7 +84,7 @@ function searchCycle(files) {
                     }
                     else {
                         inquirer_1.prompt(OPTIONS).then(answers => {
-                            submarine.get(answers.origin, choice.file, [])
+                            submarine.get(answers.origin, choice.file, ['es', 'en'])
                                 .then(subs => {
                                 if (subs && subs.length) {
                                     inquirer_1.prompt(subOptions(subs)).then(subSelection => {

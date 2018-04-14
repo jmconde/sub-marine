@@ -21,7 +21,7 @@ const log = Logger.getInstance();
   // })
 
 var submarine = new SubMarine();
-submarine.get([TYPES.ORIGIN.SUBDIVX, TYPES.ORIGIN.OPEN_SUBTITLES], filename, [])
+submarine.get([TYPES.ORIGIN.SUBDIVX, TYPES.ORIGIN.OPEN_SUBTITLES], filename, ['es', 'en'])
   .then(subs => {
     log.cInfo(Logger.BLUE_BRIGHT ,"Total length: ", subs.length);
 

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import Axios from 'axios';
 import chalk from 'chalk';
 import * as cheerio from 'cheerio';
 import * as stringScore from 'string-score';
@@ -50,7 +50,7 @@ class SubdivxOrigin implements OriginInterface {
 
   private getPage(search: Search): Promise<Sub[]> {
     return new Promise<Sub[]>((resolve, reject) => {
-      axios.get(this.getUrl(search.searchString), {}).then((response) => {
+      Axios.get(this.getUrl(search.searchString), {}).then((response) => {
         var $ = cheerio.load(response.data);
         var $subs = $(this.subSelector);
         var subs: Sub[] = [];
@@ -68,58 +68,68 @@ class SubdivxOrigin implements OriginInterface {
           var $b = $datos.find('b');
           var $a = $datos.find('a');
           var $bar = $elem.prev(this.barraSelector);
-          var downloads, format, dateUpload, rating, title;
+          var downloads, cds, format, dateUpload, rating, title;
 
-          if ($b.eq(0)[0]) {
-            var $dls = $($b.eq(0)[0].nextSibling);
-            downloads = $dls.text() ? parseInt(new String($dls.text()).replace(',', '')) : 0;
+
+
+          if ($b.eq(1)[0]) {
+            var $cds = $($b.eq(1)[0].nextSibling);
+            cds = $cds.text() ? parseInt(new String($cds.text()).replace(',', '')) : 0;
           } else {
-            downloads = null;
+            cds = null;
           }
 
-          if ($b.eq(3)[0]) {
-            var $format = $($b.eq(3)[0].nextSibling);
-            format = $format.text() ? new String($format.text()).trim() : '';
-          } else {
-            format = null;
+          if (cds === null || cds === 1) {
+            if ($b.eq(0)[0]) {
+              var $dls = $($b.eq(0)[0].nextSibling);
+              downloads = $dls.text() ? parseInt(new String($dls.text()).replace(',', '')) : 0;
+            } else {
+              downloads = null;
+            }
+
+            if ($b.eq(3)[0]) {
+              var $format = $($b.eq(3)[0].nextSibling);
+              format = $format.text() ? new String($format.text()).trim() : '';
+            } else {
+              format = null;
+            }
+
+            if ($b.eq(5)[0]) {
+              var $date = $($b.eq(5)[0].nextSibling);
+              var date = new String($date.text()).trim().split('/');
+              dateUpload = new Date(Number(date[2]), Number(date[1]), Number(date[0]));
+            } else {
+              dateUpload = null;
+            }
+
+            var $rating = $bar.find(this.ratingImgSelector);
+            rating = this.RATING[$rating.attr('src')] || null;
+
+            var description = $detalle.text();
+            var uploader = $a.eq(1).text();
+            var url = $a.eq(2).attr('href');
+            var score = this.getScore(title + ' ' + description + ' ' + format, search.searchString);
+            var lang = 'es';
+            var origin = 'SubDivX'
+
+
+            sub = {
+              description,
+              rating,
+              downloads,
+              format,
+              uploader,
+              dateUpload,
+              url,
+              score,
+              lang,
+              meta: search.metadata,
+              file: search.fileInfo,
+              origin
+            };
+
+            subs.push(sub);
           }
-
-          if ($b.eq(5)[0]) {
-            var $date = $($b.eq(5)[0].nextSibling);
-            var date = new String($date.text()).trim().split('/');
-            dateUpload = new Date(Number(date[2]), Number(date[1]), Number(date[0]));
-          } else {
-            dateUpload = null;
-          }
-
-          var $rating = $bar.find(this.ratingImgSelector);
-          rating = this.RATING[$rating.attr('src')] || null;
-
-          var description = $detalle.text();
-          var uploader = $a.eq(1).text();
-          var url = $a.eq(2).attr('href');
-          var score = this.getScore(title + ' ' + description + ' ' + format, search.searchString);
-          var lang = 'es';
-          var origin = 'SubDivX'
-
-
-          sub = {
-            description,
-            rating,
-            downloads,
-            format,
-            uploader,
-            dateUpload,
-            url,
-            score,
-            lang,
-            meta: search.metadata,
-            file: search.fileInfo,
-            origin
-          };
-
-          subs.push(sub);
-
         });
 
         // TODO:

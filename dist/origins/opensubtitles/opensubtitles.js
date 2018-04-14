@@ -17,7 +17,6 @@ class OpenSubtitlesOrigin {
     }
     search(search) {
         var meta = search.metadata;
-        var OMDBMeta;
         var registry = search.registry.get(origin_types_1.default.ORIGIN.OPEN_SUBTITLES);
         return new Promise((resolve, reject) => {
             var imdbId, hash, bytesize, sArray;

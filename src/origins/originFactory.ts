@@ -3,6 +3,7 @@ import SubdivxOrigin from './subdivx/subdivx';
 import OpenSubtitlesOrigin from './opensubtitles/opensubtitles';
 import TYPES from '../utils/origin-types';
 import Logger from '../utils/logger';
+import SubDBOrigin from './subdb/subdv';
 
 
 class OriginFactory {
@@ -15,6 +16,8 @@ class OriginFactory {
         return new SubdivxOrigin();
       case TYPES.ORIGIN.OPEN_SUBTITLES:
         return new OpenSubtitlesOrigin('jose.conde@gmail.com', 'nevada98', 'en', 'TemporaryUserAgent');
+      case TYPES.ORIGIN.SUBDB:
+        return new SubDBOrigin();
       default:
         throw new Error(`Cannot find origin ${type}`)
     }

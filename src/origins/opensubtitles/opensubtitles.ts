@@ -26,7 +26,6 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
 
   search(search: Search):  Promise<Sub[]> {
     var meta = search.metadata;
-    var OMDBMeta: Metadata;
     var registry = search.registry.get(TYPES.ORIGIN.OPEN_SUBTITLES);
 
     return new Promise<Sub[]>((resolve, reject) => {

@@ -4,7 +4,8 @@ class TYPES {
 }
 TYPES.ORIGIN = {
     SUBDIVX: 'subdivx',
-    OPEN_SUBTITLES: 'opensubtitles'
+    OPEN_SUBTITLES: 'opensubtitles',
+    SUBDB: 'subdb'
 };
 TYPES.FILE = {
     MOVIE: 'movie',

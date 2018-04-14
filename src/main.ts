@@ -52,7 +52,7 @@ export default class SubMarine {
       var metadataMap = await this.getMetadata(info);
       this.log.cDebug(Logger.YELLOW_BRIGHT, search)
 
-      subs = await this.getSubs(this.getOrigins(originTypes), metadataMap, info);
+      subs = await this.getSubs(this.getOrigins(originTypes), metadataMap, info, langs);
       resolve(subs);
 
     });
@@ -64,12 +64,12 @@ export default class SubMarine {
     });
   }
 
-  async getSubs(origins: OriginInterface[],  metadataMap: Map<string, Metadata>, info: FileInfo) : Promise<Sub[]> {
+  async getSubs(origins: OriginInterface[],  metadataMap: Map<string, Metadata>, info: FileInfo, langs: string[]) : Promise<Sub[]> {
     var promises = [];
     var search = {
       fileInfo: info,
       searchString: Commons.getSearchText(info),
-      langs: [],
+      langs,
       metadata: null,
       registry: new Map<string, string[]>()
     };
@@ -126,7 +126,7 @@ export default class SubMarine {
     return Promise.resolve(map);
   }
 
-  download(subs: Sub |Sub[], path?: string): Promise<void> {
+  async download(subs: Sub |Sub[], path?: string): Promise<void> {
     var promises = [];
 
     if (!isArray(subs)) {

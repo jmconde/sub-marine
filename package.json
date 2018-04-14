@@ -1,6 +1,6 @@
 {
   "name": "@jose.conde/submarine",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "",
   "main": "dist/client/index.js",
   "scripts": {

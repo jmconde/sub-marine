@@ -69,6 +69,7 @@ export default class FilenameManager implements Manager{
       this.log.colored('debug', 'greenBright', title);
 
       hashes[TYPES.ORIGIN.OPEN_SUBTITLES] = await HashUtil.openSubtitlesHash(filePath);
+      hashes[TYPES.ORIGIN.SUBDB] = await HashUtil.subdbHash(filePath);
       var info: FileInfo = {
         fullPath: filePath,
         filename,
