@@ -15,7 +15,6 @@ const chalk_1 = require("chalk");
 class TVMazeManager extends apiManager_1.default {
     constructor() {
         super(...arguments);
-        this.ID = 'tvmaze';
         this.URL = 'http://api.tvmaze.com';
         this.mapper = new TVMazeMapper_1.default();
     }
@@ -65,5 +64,6 @@ class TVMazeManager extends apiManager_1.default {
         return (!json || json.length === 0) ? 1 : 0;
     }
 }
+TVMazeManager.ID = 'tvmaze';
 exports.default = TVMazeManager;
 //# sourceMappingURL=TVMazeManager.js.map

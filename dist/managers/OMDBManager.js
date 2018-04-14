@@ -8,25 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const apiManager_1 = require("./apiManager");
 const chalk_1 = require("chalk");
-const OMDBMapper_1 = require("./mappers/OMDBMapper");
-const origin_types_1 = require("../utils/origin-types");
 const logger_1 = require("../utils/logger");
+const origin_types_1 = require("../utils/origin-types");
+const apiManager_1 = require("./apiManager");
+const OMDBMapper_1 = require("./mappers/OMDBMapper");
 class OMDBManager extends apiManager_1.default {
     constructor() {
         super(...arguments);
-        this.ID = 'omdb';
-        this.URL = 'http://www.omdbapi.com';
         this.mapper = new OMDBMapper_1.default();
-        this.MOVIE = 'movie';
         this.RESPONSE_OK = 'True';
     }
-    // async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
-    //   return super.get(path, query, meta).then(json => {
-    //     return Promise.reject<Metadata>('Error!');
-    //   });
-    // }
     check(json) {
         return json.Response === this.RESPONSE_OK ? 0 : 1;
     }

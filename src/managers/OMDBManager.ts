@@ -1,24 +1,15 @@
-import ApiManager from "./apiManager";
-import Metadata from "../interfaces/metadataInterface";
-import chalk from "chalk";
-import OMDBMapper from "./mappers/OMDBMapper";
-import TYPES from "../utils/origin-types";
-import FileInfo from "../interfaces/fileInfoInterface";
-import Logger from "../utils/logger";
+import chalk from 'chalk';
+
+import FileInfo from '../interfaces/fileInfoInterface';
+import Metadata from '../interfaces/metadataInterface';
+import Logger from '../utils/logger';
+import TYPES from '../utils/origin-types';
+import ApiManager from './apiManager';
+import OMDBMapper from './mappers/OMDBMapper';
 
 export default class OMDBManager extends ApiManager {
-  ID = 'omdb';
-  URL = 'http://www.omdbapi.com';
   mapper = new OMDBMapper();
-
-  MOVIE = 'movie';
   RESPONSE_OK = 'True';
-
-  // async get(path: string = '', query: any,  meta?: Metadata): Promise<Metadata> {
-  //   return super.get(path, query, meta).then(json => {
-  //     return Promise.reject<Metadata>('Error!');
-  //   });
-  // }
 
   check(json): number {
     return json.Response === this.RESPONSE_OK ? 0 : 1;

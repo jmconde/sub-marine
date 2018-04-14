@@ -10,14 +10,20 @@ import Mapper from './mappers/mapper';
 import chalk from 'chalk';
 
 export default abstract class ApiManager implements Manager {
-  abstract URL:string;
-  abstract ID: string;
+  URL:string;
+  ID: string;
   LIST_DATA_PATH?: string;
   abstract mapper: Mapper;
   static readonly REPONSE_OK = 0;
   static readonly REPONSE_NOT_FOUND = 1;
+  private config: any;
 
   protected log: Logger = Logger.getInstance();
+
+  constructor(config: any) {
+    this.ID = config.id;
+    this.URL = config.url;
+  }
 
   abstract fill(info: FileInfo): Promise<Metadata>;
   abstract check(json): number;

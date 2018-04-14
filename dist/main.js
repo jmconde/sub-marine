@@ -13,22 +13,31 @@ const del = require("del");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const request = require("request");
+const FilenameManager_1 = require("./managers/FilenameManager");
 const OMDBManager_1 = require("./managers/OMDBManager");
 const TMDbManager_1 = require("./managers/TMDbManager");
 const TVMazeManager_1 = require("./managers/TVMazeManager");
-const commons_1 = require("./utils/commons");
 const originFactory_1 = require("./origins/originFactory");
-const FilenameManager_1 = require("./managers/FilenameManager");
+const commons_1 = require("./utils/commons");
 const logger_1 = require("./utils/logger");
 const origin_types_1 = require("./utils/origin-types");
+const util_1 = require("util");
 class SubMarine {
     constructor() {
-        this.OMDB = new OMDBManager_1.default();
-        this.TMDb = new TMDbManager_1.default();
-        this.TVMaze = new TVMazeManager_1.default();
         this.log = logger_1.default.getInstance('error');
         this.Filename = new FilenameManager_1.default();
+        var config = this.config = commons_1.default.readJson('./submarineconfig.json');
+        this.OMDB = new OMDBManager_1.default(config.datasource.omdb);
+        this.TMDb = new TMDbManager_1.default(config.datasource.tmdb);
+        this.TVMaze = new TVMazeManager_1.default(config.datasource.tvmaze);
     }
+    /**
+     * Gets a list of donwloadable subtitles.
+     *
+     * @param originTypes array of subtitle databases IDs (origin)
+     * @param filepath File to search for subtitles and info
+     * @param langs langs required in ISO 639-1 code
+     */
     get(originTypes, filepath, langs) {
         return __awaiter(this, void 0, void 0, function* () {
             let promise = Promise.resolve();
@@ -80,7 +89,7 @@ class SubMarine {
                         urlMap.set(val.url, '=oOo=');
                     }
                     return acc;
-                }, []); //.filter(s => typeof s.url === 'string');
+                }, []).filter(s => typeof s.url === 'string');
                 return Promise.resolve(subs);
             });
         });
@@ -112,7 +121,23 @@ class SubMarine {
             return Promise.resolve(map);
         });
     }
-    download(sub, path) {
+    download(subs, path) {
+        var promises = [];
+        if (!util_1.isArray(subs)) {
+            subs = [subs];
+        }
+        promises = subs.map(sub => {
+            return this.downloadSingleSub(sub, path);
+        });
+        return new Promise((resolve, reject) => {
+            Promise.all(promises).then(() => {
+                console.log(chalk_1.default.gray('Process finished'));
+                resolve();
+            });
+        });
+    }
+    ;
+    downloadSingleSub(sub, path) {
         var date = new Date().getTime();
         var tempFile = `./temp_${date}`;
         var found = false;
@@ -121,7 +146,8 @@ class SubMarine {
         return new Promise((resolve, reject) => {
             if (!sub.url) {
                 console.error(chalk_1.default.red('Error: No URL.'));
-                reject();
+                resolve();
+                return;
             }
             request(sub.url.toString())
                 .on('response', response => {
@@ -154,12 +180,11 @@ class SubMarine {
                 }
                 promise.then(() => {
                     del.sync(tempFile);
-                    console.log(chalk_1.default.gray('Process finished'));
                     resolve();
                 }).catch(e => {
                     del.sync(tempFile);
                     this.log.error(chalk_1.default.red('Error!!', e));
-                    reject();
+                    resolve();
                 });
             });
         });

@@ -4,10 +4,10 @@ import * as cheerio from 'cheerio';
 import * as stringScore from 'string-score';
 
 import OriginInterface from '../../interfaces/originInterface';
-import Sub from '../../interfaces/subInterface';
-import Metadata from '../../interfaces/metadataInterface';
-import Logger from '../../utils/logger';
 import Search from '../../interfaces/searchInterface';
+import Sub from '../../interfaces/subInterface';
+import Commons from '../../utils/commons';
+import Logger from '../../utils/logger';
 import TYPES from '../../utils/origin-types';
 
 class SubdivxOrigin implements OriginInterface {
@@ -139,15 +139,6 @@ class SubdivxOrigin implements OriginInterface {
     var found: Sub[] = [];
     var finished = false;
     var error = false;
-    var sortFn = (a: Sub, b: Sub): number => {
-      if (a.score > b.score) {
-        return -1;
-      } else if (a.score === b.score) {
-        return 0
-      } else {
-        return 1;
-      }
-    };
 
     this.actualPage = 1;
 
@@ -168,7 +159,7 @@ class SubdivxOrigin implements OriginInterface {
         });
       });
     }
-    return Promise.resolve(found.sort(sortFn));
+    return Promise.resolve(found.sort(Commons.sortSubFn));
   }
 
 

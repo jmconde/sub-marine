@@ -7,7 +7,7 @@ import TYPES from "../utils/origin-types";
 import chalk from "chalk";
 
 export default class TVMazeManager extends ApiManager {
-  ID = 'tvmaze';
+  static ID = 'tvmaze';
   URL = 'http://api.tvmaze.com';
 
   mapper: Mapper = new TVMazeMapper();

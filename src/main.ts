@@ -1,31 +1,47 @@
 import chalk from 'chalk';
 import * as del from 'del';
 import { createWriteStream } from 'fs';
-import { normalize, sep } from 'path';
+import { normalize } from 'path';
 import * as request from 'request';
 
+import FileInfo from './interfaces/fileInfoInterface';
 import Metadata from './interfaces/metadataInterface';
 import OriginInterface from './interfaces/originInterface';
+import Search from './interfaces/searchInterface';
 import Sub from './interfaces/subInterface';
+import FilenameManager from './managers/FilenameManager';
 import OMDBManager from './managers/OMDBManager';
 import TMDbManager from './managers/TMDbManager';
 import TVMazeManager from './managers/TVMazeManager';
-import Commons from './utils/commons';
 import OriginFactory from './origins/originFactory';
-import FilenameManager from './managers/FilenameManager';
+import Commons from './utils/commons';
 import Logger from './utils/logger';
-import FileInfo from './interfaces/fileInfoInterface';
-import Search from './interfaces/searchInterface';
 import TYPES from './utils/origin-types';
+import { isArray } from 'util';
 
 export default class SubMarine {
   public text: string;
-  private OMDB = new OMDBManager();
-  private TMDb = new TMDbManager();
-  private TVMaze = new TVMazeManager();
+  private OMDB: OMDBManager;
+  private TMDb: TMDbManager;
+  private TVMaze: TVMazeManager;
   private log = Logger.getInstance('error');
   private Filename = new FilenameManager();
+  private config: any;
 
+  constructor() {
+    var config = this.config = Commons.readJson('./submarineconfig.json');
+    this.OMDB = new OMDBManager(config.datasource.omdb);
+    this.TMDb = new TMDbManager(config.datasource.tmdb);
+    this.TVMaze = new TVMazeManager(config.datasource.tvmaze);
+  }
+
+  /**
+   * Gets a list of donwloadable subtitles.
+   *
+   * @param originTypes array of subtitle databases IDs (origin)
+   * @param filepath File to search for subtitles and info
+   * @param langs langs required in ISO 639-1 code
+   */
   async get(originTypes: string[], filepath: string, langs: string[]): Promise<Sub[]> {
     let promise: Promise<any> = Promise.resolve();
     var subs: Sub[] = [];
@@ -81,7 +97,7 @@ export default class SubMarine {
           urlMap.set(val.url, '=oOo=');
         }
         return acc;
-      }, [])//.filter(s => typeof s.url === 'string');
+      }, []).filter(s => typeof s.url === 'string');
       return Promise.resolve<Sub[]>(subs);
     });
   }
@@ -110,7 +126,27 @@ export default class SubMarine {
     return Promise.resolve(map);
   }
 
-  download(sub: Sub, path?: string): Promise<void> {
+  download(subs: Sub |Sub[], path?: string): Promise<void> {
+    var promises = [];
+
+    if (!isArray(subs)) {
+      subs = [subs];
+    }
+
+    promises = subs.map(sub => {
+      return this.downloadSingleSub(sub, path);
+    })
+
+    return new Promise<void>((resolve, reject) =>{
+      Promise.all(promises).then(() => {
+        console.log(chalk.gray('Process finished'));
+        resolve();
+      })
+    });
+
+  };
+
+  private downloadSingleSub(sub: Sub, path?: string): Promise<void> {
     var date = new Date().getTime();
     var tempFile = `./temp_${date}`;
     var found = false;
@@ -121,7 +157,8 @@ export default class SubMarine {
     return new Promise<void>((resolve, reject) => {
       if (!sub.url) {
         console.error(chalk.red('Error: No URL.'));
-        reject();
+        resolve();
+        return;
       }
 
       request(sub.url.toString())
@@ -153,12 +190,11 @@ export default class SubMarine {
 
           promise.then(() => {
             del.sync(tempFile);
-            console.log(chalk.gray('Process finished'));
             resolve();
           }).catch(e => {
             del.sync(tempFile);
             this.log.error(chalk.red('Error!!', e));
-            reject();
+            resolve();
           })
 
         });

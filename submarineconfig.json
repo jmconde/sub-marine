@@ -1,0 +1,27 @@
+{
+  "datasource": {
+    "omdb": {
+      "id": "omdb",
+      "url": "http://www.omdbapi.com"
+    },
+    "tmdb": {
+      "id": "tmdb",
+      "url": "http://api.themoviedb.org"
+    },
+    "tvmaze": {
+      "id": "tvmaze",
+      "url": "http://api.tvmaze.com"
+    }
+  },
+  "origins": {
+    "opensubtitles": {
+      "auth": true,
+      "ISO693Version": "2",
+      "url": "https://api.opensubtitles.org/xml-rpc"
+    },
+    "subdivx": {
+      "ISO693Version": "2",
+      "url": "https://www.subdivx.com/index.php"
+    }
+  }
+}

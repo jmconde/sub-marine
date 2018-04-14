@@ -2,12 +2,27 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const chalk_1 = require("chalk");
 const fs_1 = require("fs");
+const fs_extra_1 = require("fs-extra");
 const unrar = require("node-unrar-js");
 const path_1 = require("path");
 const unzip = require("unzip");
 const logger_1 = require("./logger");
 const origin_types_1 = require("./origin-types");
 class Commons {
+    static sortSubFn(a, b) {
+        if (a.score > b.score) {
+            return -1;
+        }
+        else if (a.score === b.score) {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
+    static readJson(path) {
+        return fs_extra_1.readJsonSync(path);
+    }
     static numRightPad(value, num = 2) {
         return new String(Math.pow(10, num) + value).substring(1);
     }

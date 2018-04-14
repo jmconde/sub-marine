@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const opensubtitle_auth_1 = require("./opensubtitle-auth");
-const opensubtitlesManager_1 = require("./opensubtitlesManager");
 const chalk_1 = require("chalk");
+const commons_1 = require("../../utils/commons");
 const logger_1 = require("../../utils/logger");
 const origin_types_1 = require("../../utils/origin-types");
+const opensubtitle_auth_1 = require("./opensubtitle-auth");
+const opensubtitlesManager_1 = require("./opensubtitlesManager");
 class OpenSubtitlesOrigin {
     constructor(username, password, lang, agent) {
         this.ID = origin_types_1.default.ORIGIN.OPEN_SUBTITLES;
@@ -19,26 +20,39 @@ class OpenSubtitlesOrigin {
         var OMDBMeta;
         var registry = search.registry.get(origin_types_1.default.ORIGIN.OPEN_SUBTITLES);
         return new Promise((resolve, reject) => {
-            var imdbId;
-            if (meta.type === origin_types_1.default.FILE.EPISODE && meta.episodeData && meta.episodeData.imdbID) {
-                imdbId = meta.episodeData.imdbID;
+            var imdbId, hash, bytesize, sArray;
+            var hash = search.fileInfo.hashes[origin_types_1.default.ORIGIN.OPEN_SUBTITLES];
+            if (hash) {
+                if (registry.indexOf(hash.hash) !== -1) {
+                    resolve([]);
+                    return;
+                }
+                sArray = [{ sublanguageid: 'spa, eng', moviehash: hash.hash, moviebytesize: hash.bytesize }];
+                registry.push(hash.hash);
+                console.log(chalk_1.default.gray('Opensubtitles: Searching for ... ') + chalk_1.default.yellow(`${search.searchString} - HASH: ${hash.hash}`));
             }
-            else if (meta.type === origin_types_1.default.FILE.MOVIE && meta.imdbID) {
-                imdbId = meta.imdbID;
+            else {
+                if (meta.type === origin_types_1.default.FILE.EPISODE && meta.episodeData && meta.episodeData.imdbID) {
+                    imdbId = meta.episodeData.imdbID;
+                }
+                else if (meta.type === origin_types_1.default.FILE.MOVIE && meta.imdbID) {
+                    imdbId = meta.imdbID;
+                }
+                this.log.cInfo(logger_1.default.GREEN_BRIGHT, meta);
+                if (!imdbId) {
+                    console.log(chalk_1.default.gray('OpenSubtitles: No Episode or Movie IMDB ID.'));
+                    resolve([]);
+                    return;
+                }
+                else if (registry.indexOf(imdbId) !== -1) {
+                    resolve([]);
+                    return;
+                }
+                sArray = [{ sublanguageid: 'spa, eng', imdbid: imdbId.substring(2) }];
+                registry.push(meta.imdbID);
+                console.log(chalk_1.default.gray('Opensubtitles: Searching for ... ') + chalk_1.default.yellow(`${search.searchString} - IMDB ID: ${imdbId}`));
             }
-            this.log.cInfo(logger_1.default.GREEN_BRIGHT, meta);
-            if (!imdbId) {
-                console.log(chalk_1.default.gray('OpenSubtitles: No Episode or Movie IMDB ID.'));
-                resolve([]);
-                return;
-            }
-            else if (registry.indexOf(imdbId) !== -1) {
-                resolve([]);
-                return;
-            }
-            console.log(chalk_1.default.gray('Opensubtitles: Searching for ... ') + chalk_1.default.yellow(`${search.searchString} - IMDB ID: ${imdbId}`));
-            registry.push(meta.imdbID);
-            this.manager.call('SearchSubtitles', [{ sublanguageid: 'spa, eng', imdbid: imdbId.substring(2) }])
+            this.manager.call('SearchSubtitles', sArray)
                 .then(response => {
                 if (response.status === '200 OK') {
                     resolve(response.data.map(d => {
@@ -52,13 +66,13 @@ class OpenSubtitlesOrigin {
                             dateUpload: new Date(d.SubAddDate),
                             url: d.ZipDownloadLink,
                             lang: d.ISO639,
-                            score: 0,
                             meta: meta,
                             file: search.fileInfo,
-                            origin: 'opensubtitles.org'
+                            origin: 'opensubtitles.org',
+                            score: d.Score
                         };
                         return sub;
-                    }));
+                    }).sort(commons_1.default.sortSubFn));
                 }
                 else {
                     reject(response.status);

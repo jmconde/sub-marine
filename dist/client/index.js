@@ -54,9 +54,9 @@ const fileOpts = files => {
 };
 const subOptions = subs => {
     return {
-        type: 'list',
+        type: 'checkbox',
         name: 'sub',
-        message: `Select a sub to download: [${subs.length} Found]`,
+        message: `Select subs to download: [${subs.length} Found]`,
         pageSize,
         choices: subs.map((sub, i) => {
             return { name: `${i + 1}) (${sub.origin}) ${sub.file.fullName} ${sub.lang} (Score: ${sub.score})`, value: sub };

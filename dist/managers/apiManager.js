@@ -14,8 +14,10 @@ const uriTemplate = require("uri-templates");
 const logger_1 = require("../utils/logger");
 const chalk_1 = require("chalk");
 class ApiManager {
-    constructor() {
+    constructor(config) {
         this.log = logger_1.default.getInstance();
+        this.ID = config.id;
+        this.URL = config.url;
     }
     get(path = '', query, type) {
         return __awaiter(this, void 0, void 0, function* () {

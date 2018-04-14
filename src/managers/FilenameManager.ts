@@ -8,19 +8,21 @@ import chalk from 'chalk';
 import Logger from '../utils/logger';
 import FileInfo from '../interfaces/fileInfoInterface';
 import TYPES from '../utils/origin-types';
+import HashUtil from '../utils/hash';
 
 export default class FilenameManager implements Manager{
   ID = 'fileInfo';
   private log = Logger.getInstance();
 
-  fill(filePath): Promise<FileInfo> {
+  async fill(filePath): Promise<FileInfo> {
     var tokens = Commons.tokenize(Commons.getFilename(filePath));
 
     console.log(chalk.grey('getting metadata from Filename...'));
 
-    return new Promise<FileInfo>((resolve, reject) => {
+    return new Promise<FileInfo>(async (resolve, reject) => {
       var type: string = TYPES.FILE.MOVIE;
       var lastIndex = filePath.lastIndexOf(sep);
+      var hashes: any = {};
       var matcher: RegExpMatchArray,
         data: string,
         season: number,
@@ -66,6 +68,7 @@ export default class FilenameManager implements Manager{
       title = title.replace(/\.|\(\)/g, ' ').trim();
       this.log.colored('debug', 'greenBright', title);
 
+      hashes[TYPES.ORIGIN.OPEN_SUBTITLES] = await HashUtil.openSubtitlesHash(filePath);
       var info: FileInfo = {
         fullPath: filePath,
         filename,
@@ -76,7 +79,8 @@ export default class FilenameManager implements Manager{
         type,
         season,
         episode,
-        year
+        year,
+        hashes
       };
 
       resolve(info);

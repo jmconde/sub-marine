@@ -1,13 +1,13 @@
 import chalk from 'chalk';
-import { appendFileSync, createReadStream, createWriteStream, readFileSync , existsSync} from 'fs';
+import { appendFileSync, createReadStream, createWriteStream, existsSync, readFileSync } from 'fs';
+import { readJsonSync } from 'fs-extra';
 import * as unrar from 'node-unrar-js';
-import { sep, normalize } from 'path';
+import { normalize, sep } from 'path';
 import * as unzip from 'unzip';
 
-import Metadata from '../interfaces/metadataInterface';
+import FileInfo from '../interfaces/fileInfoInterface';
 import Sub from '../interfaces/subInterface';
 import Logger from './logger';
-import FileInfo from '../interfaces/fileInfoInterface';
 import TYPES from './origin-types';
 
 export default class Commons {
@@ -18,6 +18,20 @@ export default class Commons {
     SEASON_EPISODE: /[s|S]\d{2}[e|E]\d{2}/,
     SEASON_EPISODE_OTHER: /\d{1,2}x\d{1,2}/,
     YEAR: /(\.|\s|\()\d{4}(\.|\s|\))/
+  }
+
+  static sortSubFn(a: Sub, b: Sub){
+    if (a.score > b.score) {
+      return -1;
+    } else if (a.score === b.score) {
+      return 0
+    } else {
+      return 1;
+    }
+  }
+
+  static readJson(path: string) {
+    return readJsonSync(path);
   }
 
   static numRightPad(value: number, num: number = 2) {

@@ -5,7 +5,7 @@ export default interface FileInfo {
   filename: string,
   extension: string,
   length?: number,
-  hash?: string,
+  hashes?: any,
   langs?: string[],
   year?: string,
   episode?: number,

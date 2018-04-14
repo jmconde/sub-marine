@@ -15,8 +15,6 @@ const origin_types_1 = require("../utils/origin-types");
 class TMDbManager extends apiManager_1.default {
     constructor() {
         super(...arguments);
-        this.ID = 'tmdb';
-        this.URL = 'http://api.themoviedb.org';
         this.LIST_DATA_PATH = 'results';
         this.mapper = new TMDbMapper_1.default();
     }

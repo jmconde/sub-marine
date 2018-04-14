@@ -6,8 +6,6 @@ import FileInfo from "../interfaces/fileInfoInterface";
 import TYPES from "../utils/origin-types";
 
 export default class TMDbManager extends ApiManager {
-  ID = 'tmdb';
-  URL = 'http://api.themoviedb.org';
   LIST_DATA_PATH = 'results';
   mapper = new TMDbMapper();
 

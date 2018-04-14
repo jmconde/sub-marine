@@ -12,6 +12,7 @@ const axios_1 = require("axios");
 const chalk_1 = require("chalk");
 const cheerio = require("cheerio");
 const stringScore = require("string-score");
+const commons_1 = require("../../utils/commons");
 const logger_1 = require("../../utils/logger");
 const origin_types_1 = require("../../utils/origin-types");
 class SubdivxOrigin {
@@ -128,17 +129,6 @@ class SubdivxOrigin {
             var found = [];
             var finished = false;
             var error = false;
-            var sortFn = (a, b) => {
-                if (a.score > b.score) {
-                    return -1;
-                }
-                else if (a.score === b.score) {
-                    return 0;
-                }
-                else {
-                    return 1;
-                }
-            };
             this.actualPage = 1;
             console.log(chalk_1.default.gray('SubdivX: Searching for ... ') + chalk_1.default.yellow(search.searchString));
             while (!finished) {
@@ -156,7 +146,7 @@ class SubdivxOrigin {
                     });
                 });
             }
-            return Promise.resolve(found.sort(sortFn));
+            return Promise.resolve(found.sort(commons_1.default.sortSubFn));
         });
     }
     search(search) {
