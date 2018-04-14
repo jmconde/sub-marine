@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import chalk from 'chalk';
 import * as commander from 'commander';
 import * as glob from 'glob';
