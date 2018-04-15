@@ -16,6 +16,11 @@ const log = Logger.getInstance();
 
 // LangUtil.test();
 console.log(LangUtil.getLocal('es'));
+console.log(process.env);
+console.log(__dirname);
+console.log(__filename);
+console.log('->', process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME']);
+
 // HashUtil.subdbHash(filename).then(hash => {
   //   console.log(hash);
   // })

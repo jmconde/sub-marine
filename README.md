@@ -1,5 +1,5 @@
 # <img alt="SubMarine" src="https://raw.githubusercontent.com/jmconde/samples/master/submarine.svg?sanitize=true" width="50" height="50" style="float: left;margin-right: 10px;margin-top: -8px;" /> SubMarine
-`v0.3.0`
+`v0.3.1`
 
 
 Is not just another subtitle downloader, SubMarine intends to provide a common interface to download subtitle from different sources.
@@ -10,7 +10,7 @@ Experimental. Search for media file metadata from different sources (OMDB, TMDb,
 ```
 npm i @jose.conde/submarine -g
 
-submarine search
+submarine search [-p | --path <path/to/files>]
 ```
 
 ## Definitions

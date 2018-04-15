@@ -18,7 +18,20 @@ prompt.registerPrompt('directory', selectDir);
 
 const log = Logger.getInstance();
 const pageSize = 15;
-const config = Commons.readJson('./submarineconfig.json').client;
+// const config = Commons.readJson(`${__dirname}/submarineconfig.json`).client;
+const config = {
+  "langs": [
+    { "id": "es", "checked": true},
+    { "id": "en", "checked": true},
+    { "id": "fr", "checked": false},
+    { "id": "pt", "checked": false},
+    { "id": "de", "checked": false},
+    { "id": "it", "checked": false},
+    { "id": "ru", "checked": false},
+    { "id": "ko", "checked": false}
+  ],
+  "extensions": ["avi","mp4","mkv","webm"]
+};
 var state: Map<string, any> =  new Map();
 log.setLevel('error');
 

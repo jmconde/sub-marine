@@ -19,11 +19,23 @@ const main_1 = require("../main");
 const logger_1 = require("../utils/logger");
 const origin_types_1 = require("../utils/origin-types");
 const lang_1 = require("../utils/lang");
-const commons_1 = require("../utils/commons");
 inquirer_1.prompt.registerPrompt('directory', selectDir);
 const log = logger_1.default.getInstance();
 const pageSize = 15;
-const config = commons_1.default.readJson('./submarineconfig.json').client;
+// const config = Commons.readJson(`${__dirname}/submarineconfig.json`).client;
+const config = {
+    "langs": [
+        { "id": "es", "checked": true },
+        { "id": "en", "checked": true },
+        { "id": "fr", "checked": false },
+        { "id": "pt", "checked": false },
+        { "id": "de", "checked": false },
+        { "id": "it", "checked": false },
+        { "id": "ru", "checked": false },
+        { "id": "ko", "checked": false }
+    ],
+    "extensions": ["avi", "mp4", "mkv", "webm"]
+};
 var state = new Map();
 log.setLevel('error');
 const dirOpt = basePath => {

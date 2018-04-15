@@ -12,6 +12,10 @@ var filename = 'd:\\downloads\\.test\\Back.to.the.Future.1985.720p.BrRip.x264.YI
 const log = logger_1.default.getInstance();
 // LangUtil.test();
 console.log(lang_1.default.getLocal('es'));
+console.log(process.env);
+console.log(__dirname);
+console.log(__filename);
+console.log('->', process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME']);
 // HashUtil.subdbHash(filename).then(hash => {
 //   console.log(hash);
 // })
