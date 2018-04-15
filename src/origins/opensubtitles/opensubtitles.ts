@@ -9,6 +9,7 @@ import Logger from '../../utils/logger';
 import TYPES from '../../utils/origin-types';
 import OpenSubtitleAuth from './opensubtitle-auth';
 import OpensubtitlesManager from './opensubtitlesManager';
+import LangUtil from '../../utils/lang';
 
 export default class OpenSubtitlesOrigin implements OriginInterface {
   readonly ID = TYPES.ORIGIN.OPEN_SUBTITLES;
@@ -27,6 +28,7 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
   search(search: Search):  Promise<Sub[]> {
     var meta = search.metadata;
     var registry = search.registry.get(TYPES.ORIGIN.OPEN_SUBTITLES);
+    var langs = search.langs.map(l => LangUtil.getValue('2', l)).join(',');
 
     return new Promise<Sub[]>((resolve, reject) => {
       var imdbId, hash, bytesize, sArray;
@@ -36,9 +38,9 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
           resolve([]);
           return;
         }
-        sArray = [{sublanguageid: 'spa, eng', moviehash: hash.hash, moviebytesize: hash.bytesize}];
+        sArray = [{sublanguageid: langs, moviehash: hash.hash, moviebytesize: hash.bytesize}];
         registry.push(hash.hash);
-        console.log(chalk.gray('Opensubtitles: Searching for ... ') + chalk.yellow(`${search.searchString} - HASH: ${hash.hash}`));
+        console.log(chalk.gray('Opensubtitles: Searching for ... ') + chalk.yellow(`${search.searchString} - HASH: ${hash.hash} - LANGS: ${langs}`));
       } else {
         if (meta.type === TYPES.FILE.EPISODE && meta.episodeData && meta.episodeData.imdbID) {
           imdbId = meta.episodeData.imdbID;

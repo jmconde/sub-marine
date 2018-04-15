@@ -6,6 +6,7 @@ const logger_1 = require("../../utils/logger");
 const origin_types_1 = require("../../utils/origin-types");
 const opensubtitle_auth_1 = require("./opensubtitle-auth");
 const opensubtitlesManager_1 = require("./opensubtitlesManager");
+const lang_1 = require("../../utils/lang");
 class OpenSubtitlesOrigin {
     constructor(username, password, lang, agent) {
         this.ID = origin_types_1.default.ORIGIN.OPEN_SUBTITLES;
@@ -18,6 +19,7 @@ class OpenSubtitlesOrigin {
     search(search) {
         var meta = search.metadata;
         var registry = search.registry.get(origin_types_1.default.ORIGIN.OPEN_SUBTITLES);
+        var langs = search.langs.map(l => lang_1.default.getValue('2', l)).join(',');
         return new Promise((resolve, reject) => {
             var imdbId, hash, bytesize, sArray;
             var hash = search.fileInfo.hashes[origin_types_1.default.ORIGIN.OPEN_SUBTITLES];
@@ -26,9 +28,9 @@ class OpenSubtitlesOrigin {
                     resolve([]);
                     return;
                 }
-                sArray = [{ sublanguageid: 'spa, eng', moviehash: hash.hash, moviebytesize: hash.bytesize }];
+                sArray = [{ sublanguageid: langs, moviehash: hash.hash, moviebytesize: hash.bytesize }];
                 registry.push(hash.hash);
-                console.log(chalk_1.default.gray('Opensubtitles: Searching for ... ') + chalk_1.default.yellow(`${search.searchString} - HASH: ${hash.hash}`));
+                console.log(chalk_1.default.gray('Opensubtitles: Searching for ... ') + chalk_1.default.yellow(`${search.searchString} - HASH: ${hash.hash} - LANGS: ${langs}`));
             }
             else {
                 if (meta.type === origin_types_1.default.FILE.EPISODE && meta.episodeData && meta.episodeData.imdbID) {

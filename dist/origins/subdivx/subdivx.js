@@ -160,6 +160,11 @@ class SubdivxOrigin {
     }
     search(search) {
         var registry = search.registry.get(origin_types_1.default.ORIGIN.OPEN_SUBTITLES);
+        // SubDivX only has Spanish subtitles.
+        if (search.langs.indexOf('es') === -1) {
+            return Promise.resolve([]);
+        }
+        // No Search String or already searched.
         if (!search || !search.searchString || search.searchString.trim() === '' || registry.indexOf(search.searchString) !== -1) {
             return Promise.resolve([]);
         }

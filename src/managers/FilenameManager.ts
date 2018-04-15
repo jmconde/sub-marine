@@ -35,7 +35,7 @@ export default class FilenameManager implements Manager{
         path: string;
 
       if (!pathExistsSync(filePath)) {
-        reject('File does not exist.')
+        reject('File does not exist.');
         return;
       }
 
@@ -48,6 +48,10 @@ export default class FilenameManager implements Manager{
         type = TYPES.FILE.EPISODE;
       } else {
         matcher = filename.match(Commons.REGEX.YEAR);
+
+        if (!matcher) {
+          reject('Invalid filename format.' + chalk.gray(chalk.italic(' Ex: Braindead.S01E01.HDTV.x264-LOL.mkv')))
+        }
       }
       data = matcher[0].toUpperCase();
       title = filename.substring(0, matcher.index);

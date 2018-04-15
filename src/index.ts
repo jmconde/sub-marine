@@ -15,19 +15,19 @@ var filename = 'd:\\downloads\\.test\\Back.to.the.Future.1985.720p.BrRip.x264.YI
 const log = Logger.getInstance();
 
 // LangUtil.test();
-
+console.log(LangUtil.getLocal('es'));
 // HashUtil.subdbHash(filename).then(hash => {
   //   console.log(hash);
   // })
 
-var submarine = new SubMarine();
-submarine.get([TYPES.ORIGIN.SUBDIVX, TYPES.ORIGIN.OPEN_SUBTITLES], filename, ['es', 'en'])
-  .then(subs => {
-    log.cInfo(Logger.BLUE_BRIGHT ,"Total length: ", subs.length);
+// var submarine = new SubMarine();
+// submarine.get([TYPES.ORIGIN.SUBDIVX, TYPES.ORIGIN.OPEN_SUBTITLES], filename, ['es', 'en'])
+//   .then(subs => {
+//     log.cInfo(Logger.BLUE_BRIGHT ,"Total length: ", subs.length);
 
-    subs.map(sub => {
-      log.info(`(${sub.origin}) ${sub.meta.title} -> ${sub.url}`)
-    });
+//     subs.map(sub => {
+//       log.info(`(${sub.origin}) ${sub.meta.title} -> ${sub.url}`)
+//     });
 
-    submarine.download(subs[0]);
-  });
+//     submarine.download(subs[0]);
+//   });

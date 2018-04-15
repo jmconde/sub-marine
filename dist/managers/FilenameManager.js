@@ -43,6 +43,9 @@ class FilenameManager {
                 }
                 else {
                     matcher = filename.match(commons_1.default.REGEX.YEAR);
+                    if (!matcher) {
+                        reject('Invalid filename format.' + chalk_1.default.gray(chalk_1.default.italic(' Ex: Braindead.S01E01.HDTV.x264-LOL.mkv')));
+                    }
                 }
                 data = matcher[0].toUpperCase();
                 title = filename.substring(0, matcher.index);

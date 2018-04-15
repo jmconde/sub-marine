@@ -16,21 +16,27 @@ const inquirer_1 = require("inquirer");
 const selectDir = require("inquirer-select-directory");
 const path_1 = require("path");
 const main_1 = require("../main");
-const origin_types_1 = require("../utils/origin-types");
 const logger_1 = require("../utils/logger");
+const origin_types_1 = require("../utils/origin-types");
+const lang_1 = require("../utils/lang");
+const commons_1 = require("../utils/commons");
 inquirer_1.prompt.registerPrompt('directory', selectDir);
 const log = logger_1.default.getInstance();
 const pageSize = 15;
+const config = commons_1.default.readJson('./submarineconfig.json').client;
+var state = new Map();
 log.setLevel('error');
-const FILES = {
-    type: 'directory',
-    name: 'path',
-    options: {
-        displayHidden: true
-    },
-    pageSize,
-    message: 'Media files path:',
-    basePath: 'd:/downloads/' //process.cwd()
+const dirOpt = basePath => {
+    return {
+        type: 'directory',
+        name: 'path',
+        options: {
+            displayHidden: true
+        },
+        pageSize,
+        message: 'Media files path:',
+        basePath
+    };
 };
 const OPTIONS = [{
         type: 'checkbox',
@@ -42,6 +48,17 @@ const OPTIONS = [{
             { name: 'OpenSubtitles', value: origin_types_1.default.ORIGIN.OPEN_SUBTITLES, checked: true },
         ]
     }];
+const langOpts = () => {
+    return {
+        type: 'checkbox',
+        name: 'lang',
+        pageSize,
+        message: 'Select languages:',
+        choices: config.langs.map(l => {
+            return { name: lang_1.default.getLocal(l.id), value: l.id, checked: l.checked };
+        })
+    };
+};
 const fileOpts = files => {
     return {
         type: 'list',
@@ -76,62 +93,67 @@ function searchCycle(files) {
         var finished = false;
         var submarine = new main_1.default();
         while (!finished) {
-            yield new Promise((resolve, reject) => {
+            yield new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 inquirer_1.prompt(fileOpts(files)).then(choice => {
                     if (choice.file === '..') {
                         reject('back');
                         return;
                     }
                     else {
-                        inquirer_1.prompt(OPTIONS).then(answers => {
-                            submarine.get(answers.origin, choice.file, ['es', 'en'])
-                                .then(subs => {
-                                if (subs && subs.length) {
-                                    inquirer_1.prompt(subOptions(subs)).then(subSelection => {
-                                        submarine.download(subSelection.sub)
-                                            .then(() => {
-                                            inquirer_1.prompt(AGAIN).then(again => {
-                                                again.confirm ? resolve() : reject();
-                                            });
-                                        })
-                                            .catch(() => {
-                                            console.error(chalk_1.default.red('Error!'));
-                                            inquirer_1.prompt(AGAIN).then(again => {
-                                                again.confirm ? resolve() : reject();
+                        inquirer_1.prompt(langOpts()).then(langs => {
+                            inquirer_1.prompt(OPTIONS).then(answers => {
+                                submarine.get(answers.origin, choice.file, langs.lang)
+                                    .then(subs => {
+                                    if (subs && subs.length) {
+                                        inquirer_1.prompt(subOptions(subs)).then(subSelection => {
+                                            submarine.download(subSelection.sub)
+                                                .then(() => {
+                                                inquirer_1.prompt(AGAIN).then(again => {
+                                                    again.confirm ? resolve() : reject();
+                                                });
+                                            })
+                                                .catch(() => {
+                                                console.error(chalk_1.default.red('Error!'));
+                                                inquirer_1.prompt(AGAIN).then(again => {
+                                                    again.confirm ? resolve() : reject();
+                                                });
                                             });
                                         });
-                                    });
-                                }
-                                else {
-                                    console.log(chalk_1.default.yellow('Not subs were found.'));
-                                    inquirer_1.prompt(AGAIN).then(again => {
-                                        again.confirm ? resolve() : reject();
-                                    });
-                                }
+                                    }
+                                    else {
+                                        console.log(chalk_1.default.yellow('Not subs were found.'));
+                                        inquirer_1.prompt(AGAIN).then(again => {
+                                            again.confirm ? resolve() : reject();
+                                        });
+                                    }
+                                });
                             });
                         });
                     }
                 });
-            });
+            }));
         }
         return Promise.resolve();
     });
 }
-function pFiles() {
+function pFiles(cmd) {
     return __awaiter(this, void 0, void 0, function* () {
-        inquirer_1.prompt(FILES).then(sel => {
-            console.log(path_1.normalize(`${sel.path}/*.{avi,mp4,mkv,webm}`));
-            glob(path_1.normalize(`${sel.path}/*.{avi,mp4,mkv,webm}`), {}, function (err, files) {
+        var last = state.get('lastPath');
+        var basePath = last || (cmd.path ? path_1.normalize(cmd.path) : process.cwd());
+        var extensions = `${path_1.sep}*.{${config.extensions}}`;
+        inquirer_1.prompt(dirOpt(basePath)).then(sel => {
+            sel.path = path_1.normalize(sel.path);
+            state.set('lastPath', sel.path);
+            glob(path_1.normalize(`${sel.path}${extensions}`), {}, function (err, files) {
                 if (err) {
                     console.error(err);
                     process.exit(1);
                 }
-                log.debug(files);
                 files = files.map(d => path_1.normalize(d));
                 searchCycle(files)
                     .catch(err => {
                     if (err === 'back') {
-                        pFiles();
+                        pFiles(cmd);
                         return;
                     }
                     console.log(chalk_1.default.gray(`Thanks for using ${chalk_1.default.white('SubMarine')}.`));
@@ -148,6 +170,7 @@ commander
 commander
     .command('search')
     .alias('s')
+    .option('-p --path <path>', 'Path where media files are.')
     .description('Search')
     .action(pFiles);
 commander.parse(process.argv);
