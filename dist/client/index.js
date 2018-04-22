@@ -34,7 +34,8 @@ const config = {
         { "id": "ru", "checked": false },
         { "id": "ko", "checked": false }
     ],
-    "extensions": ["avi", "mp4", "mkv", "webm"]
+    "extensions": ["avi", "mp4", "mkv", "webm"],
+    "subExtensions": ["srt", "ssa", "sub", "sbv", "mpsub", "lrc", "cap"]
 };
 var state = new Map();
 log.setLevel('error');
@@ -78,7 +79,22 @@ const fileOpts = files => {
         message: `Select a file to search subtitles for: [${files.length} Found]`,
         pageSize,
         choices: files.map((file, i) => {
-            return { name: `${i + 1}) ` + file.substring(file.lastIndexOf(path_1.sep) + 1), value: file };
+            var subInfo = [];
+            var infoStr;
+            config.langs.forEach(l => {
+                var name = file.substring(0, file.lastIndexOf('.'))
+                    .replace(/\[|\]|\(|\)/g, '?');
+                var pattern = `${path_1.normalize(name)}.${l.id}?(.+[0-9]).{${config.subExtensions.join(',')}}`;
+                var files = glob.sync(pattern);
+                if (files.length) {
+                    subInfo.push(l.id.toUpperCase());
+                }
+            });
+            infoStr = !subInfo.length ? '' : ` (${subInfo.join(', ')})`;
+            return {
+                name: `${i + 1}) ` + file.substring(file.lastIndexOf(path_1.sep) + 1) + infoStr,
+                value: file
+            };
         }).concat([{ name: '<< Go back >>', value: '..' }])
     };
 };
@@ -154,9 +170,11 @@ function pFiles(cmd) {
         var basePath = last || (cmd.path ? path_1.normalize(cmd.path) : process.cwd());
         var extensions = `${path_1.sep}*.{${config.extensions}}`;
         inquirer_1.prompt(dirOpt(basePath)).then(sel => {
+            var pattern;
             sel.path = path_1.normalize(sel.path);
             state.set('lastPath', sel.path);
-            glob(path_1.normalize(`${sel.path}${extensions}`), {}, function (err, files) {
+            pattern = path_1.normalize(`${sel.path}${extensions}`).replace(/\[|\]|\(|\)/g, '?');
+            glob(pattern, {}, function (err, files) {
                 if (err) {
                     console.error(err);
                     process.exit(1);

@@ -29,7 +29,47 @@ export default class SubMarine {
   private config: any;
 
   constructor() {
-    var config = this.config = Commons.readJson('./submarineconfig.json');
+    // var config = this.config = Commons.readJson('./submarineconfig.json');
+    var config = {
+      "datasource": {
+        "omdb": {
+          "id": "omdb",
+          "url": "http://www.omdbapi.com"
+        },
+        "tmdb": {
+          "id": "tmdb",
+          "url": "http://api.themoviedb.org"
+        },
+        "tvmaze": {
+          "id": "tvmaze",
+          "url": "http://api.tvmaze.com"
+        }
+      },
+      "origins": {
+        "opensubtitles": {
+          "auth": true,
+          "ISO693Version": "2",
+          "url": "https://api.opensubtitles.org/xml-rpc"
+        },
+        "subdivx": {
+          "ISO693Version": "2",
+          "url": "https://www.subdivx.com/index.php"
+        }
+      },
+      "client": {
+        "langs": [
+          { "id": "es", "checked": true},
+          { "id": "en", "checked": true},
+          { "id": "fr", "checked": false},
+          { "id": "pt", "checked": false},
+          { "id": "de", "checked": false},
+          { "id": "it", "checked": false},
+          { "id": "ru", "checked": false},
+          { "id": "ko", "checked": false}
+        ],
+        "extensions": ["avi","mp4","mkv","webm"]
+      }
+    };
     this.OMDB = new OMDBManager(config.datasource.omdb);
     this.TMDb = new TMDbManager(config.datasource.tmdb);
     this.TVMaze = new TVMazeManager(config.datasource.tvmaze);
@@ -89,7 +129,9 @@ export default class SubMarine {
     return Promise.all(promises).then(r => {
       var subs: Sub[] = [];
       var urlMap: Map<string, string> = new Map();
-      r.forEach(s => subs = subs.concat(s));
+      r.forEach(s => {
+        subs = subs.concat(s.filter(s => typeof s.url === 'string').slice(0,2))
+      });
       subs = subs.reduce((acc, val) => {
         var mapped = urlMap.get(val.url);
         if (!mapped) {
@@ -97,7 +139,7 @@ export default class SubMarine {
           urlMap.set(val.url, '=oOo=');
         }
         return acc;
-      }, []).filter(s => typeof s.url === 'string');
+      }, []);
       return Promise.resolve<Sub[]>(subs);
     });
   }
@@ -148,7 +190,7 @@ export default class SubMarine {
 
   private downloadSingleSub(sub: Sub, path?: string): Promise<void> {
     var date = new Date().getTime();
-    var tempFile = `./temp_${date}`;
+    var tempFile = `./temp_${date}_${(Math.random() *1000).toFixed(0)}`;
     var found = false;
     var type;
 

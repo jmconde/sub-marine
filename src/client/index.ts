@@ -30,7 +30,8 @@ const config = {
     { "id": "ru", "checked": false},
     { "id": "ko", "checked": false}
   ],
-  "extensions": ["avi","mp4","mkv","webm"]
+  "extensions": ["avi","mp4","mkv","webm"],
+  "subExtensions": ["srt","ssa","sub","sbv","mpsub","lrc","cap"]
 };
 var state: Map<string, any> =  new Map();
 log.setLevel('error');
@@ -79,7 +80,26 @@ const fileOpts = files => {
     message: `Select a file to search subtitles for: [${files.length} Found]`,
     pageSize,
     choices: files.map((file: string, i: number) => {
-      return { name: `${i + 1}) ` + file.substring(file.lastIndexOf(sep) + 1), value: file }
+      var subInfo: string[] = [];
+      var infoStr: string;
+
+      config.langs.forEach(l => {
+        var name = file.substring(0, file.lastIndexOf('.'))
+          .replace(/\[|\]|\(|\)/g, '?');
+        var pattern = `${normalize(name)}.${l.id}?(.+[0-9]).{${config.subExtensions.join(',')}}`;
+        var files = glob.sync(pattern);
+
+        if (files.length) {
+          subInfo.push(l.id.toUpperCase());
+        }
+      });
+
+      infoStr = !subInfo.length ? '' : ` (${subInfo.join(', ')})`;
+
+      return {
+        name: `${i + 1}) ` + file.substring(file.lastIndexOf(sep) + 1) + infoStr,
+        value: file
+      };
     }).concat([{ name: '<< Go back >>', value: '..' }])
   };
 }
@@ -157,10 +177,12 @@ async function pFiles(cmd) {
   var extensions = `${sep}*.{${config.extensions}}`
 
   prompt(dirOpt(basePath)).then(sel => {
+    var pattern;
     sel.path = normalize(sel.path);
     state.set('lastPath', sel.path);
+    pattern = normalize(`${sel.path}${extensions}`).replace(/\[|\]|\(|\)/g, '?');
 
-    glob(normalize(`${sel.path}${extensions}`), {}, function (err, files) {
+    glob(pattern, {}, function (err, files) {
       if (err) {
         console.error(err);
         process.exit(1);

@@ -57,9 +57,9 @@ export default class OpenSubtitlesOrigin implements OriginInterface {
           resolve([]);
           return;
         }
-        sArray = [{sublanguageid: 'spa, eng', imdbid: imdbId.substring(2)}];
+        sArray = [{sublanguageid: langs, imdbid: imdbId.substring(2)}];
         registry.push(meta.imdbID);
-        console.log(chalk.gray('Opensubtitles: Searching for ... ') + chalk.yellow(`${search.searchString} - IMDB ID: ${imdbId}`));
+        console.log(chalk.gray('Opensubtitles: Searching for ... ') + chalk.yellow(`${search.searchString} - IMDB ID: ${imdbId} - LANGS: ${langs}`));
       }
 
       this.manager.call('SearchSubtitles', sArray)

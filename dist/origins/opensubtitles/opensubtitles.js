@@ -49,9 +49,9 @@ class OpenSubtitlesOrigin {
                     resolve([]);
                     return;
                 }
-                sArray = [{ sublanguageid: 'spa, eng', imdbid: imdbId.substring(2) }];
+                sArray = [{ sublanguageid: langs, imdbid: imdbId.substring(2) }];
                 registry.push(meta.imdbID);
-                console.log(chalk_1.default.gray('Opensubtitles: Searching for ... ') + chalk_1.default.yellow(`${search.searchString} - IMDB ID: ${imdbId}`));
+                console.log(chalk_1.default.gray('Opensubtitles: Searching for ... ') + chalk_1.default.yellow(`${search.searchString} - IMDB ID: ${imdbId} - LANGS: ${langs}`));
             }
             this.manager.call('SearchSubtitles', sArray)
                 .then(response => {
