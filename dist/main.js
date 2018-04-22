@@ -166,6 +166,7 @@ class SubMarine {
     download(subs, path) {
         return __awaiter(this, void 0, void 0, function* () {
             var promises = [];
+            path = path_1.normalize(path);
             if (!util_1.isArray(subs)) {
                 subs = [subs];
             }

@@ -171,6 +171,8 @@ export default class SubMarine {
   async download(subs: Sub |Sub[], path?: string): Promise<void> {
     var promises = [];
 
+    path = normalize(path);
+
     if (!isArray(subs)) {
       subs = [subs];
     }

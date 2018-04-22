@@ -23,6 +23,7 @@ export default class FilenameManager implements Manager{
       var type: string = TYPES.FILE.MOVIE;
       var lastIndex = filePath.lastIndexOf(sep);
       var hashes: any = {};
+      var exists: boolean = pathExistsSync(filePath);
       var matcher: RegExpMatchArray,
         data: string,
         season: number,
@@ -34,10 +35,7 @@ export default class FilenameManager implements Manager{
         fullName: string,
         path: string;
 
-      if (!pathExistsSync(filePath)) {
-        reject('File does not exist.');
-        return;
-      }
+      this.log.info(exists ? `File ${fullName} exists.` : `File ${fullName} does not exist.`);
 
       fullName = filePath.substring(lastIndex + 1);
       filename = fullName.substring(0, fullName.lastIndexOf('.'))
@@ -72,8 +70,10 @@ export default class FilenameManager implements Manager{
       title = title.replace(/\.|\(\)/g, ' ').trim();
       this.log.colored('debug', 'greenBright', title);
 
-      hashes[TYPES.ORIGIN.OPEN_SUBTITLES] = await HashUtil.openSubtitlesHash(filePath);
-      hashes[TYPES.ORIGIN.SUBDB] = await HashUtil.subdbHash(filePath);
+      if (exists) {
+        hashes[TYPES.ORIGIN.OPEN_SUBTITLES] = await HashUtil.openSubtitlesHash(filePath);
+        hashes[TYPES.ORIGIN.SUBDB] = await HashUtil.subdbHash(filePath);
+      }
       var info: FileInfo = {
         fullPath: filePath,
         filename,

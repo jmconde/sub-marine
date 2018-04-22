@@ -174,7 +174,7 @@ class SubdivxOrigin implements OriginInterface {
 
 
   search(search: Search):  Promise<Sub[]> {
-    var registry = search.registry.get(TYPES.ORIGIN.OPEN_SUBTITLES);
+    var registry = search.registry.get(TYPES.ORIGIN.SUBDIVX);
 
     // SubDivX only has Spanish subtitles.
     if (search.langs.indexOf('es') === -1) {

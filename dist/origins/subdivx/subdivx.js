@@ -159,7 +159,7 @@ class SubdivxOrigin {
         });
     }
     search(search) {
-        var registry = search.registry.get(origin_types_1.default.ORIGIN.OPEN_SUBTITLES);
+        var registry = search.registry.get(origin_types_1.default.ORIGIN.SUBDIVX);
         // SubDivX only has Spanish subtitles.
         if (search.langs.indexOf('es') === -1) {
             return Promise.resolve([]);

@@ -28,11 +28,9 @@ class FilenameManager {
                 var type = origin_types_1.default.FILE.MOVIE;
                 var lastIndex = filePath.lastIndexOf(path_1.sep);
                 var hashes = {};
+                var exists = fs_extra_1.pathExistsSync(filePath);
                 var matcher, data, season, episode, title, year, filename, extension, fullName, path;
-                if (!fs_extra_1.pathExistsSync(filePath)) {
-                    reject('File does not exist.');
-                    return;
-                }
+                this.log.info(exists ? `File ${fullName} exists.` : `File ${fullName} does not exist.`);
                 fullName = filePath.substring(lastIndex + 1);
                 filename = fullName.substring(0, fullName.lastIndexOf('.'));
                 extension = fullName.split('.').pop();
@@ -63,8 +61,10 @@ class FilenameManager {
                 }
                 title = title.replace(/\.|\(\)/g, ' ').trim();
                 this.log.colored('debug', 'greenBright', title);
-                hashes[origin_types_1.default.ORIGIN.OPEN_SUBTITLES] = yield hash_1.default.openSubtitlesHash(filePath);
-                hashes[origin_types_1.default.ORIGIN.SUBDB] = yield hash_1.default.subdbHash(filePath);
+                if (exists) {
+                    hashes[origin_types_1.default.ORIGIN.OPEN_SUBTITLES] = yield hash_1.default.openSubtitlesHash(filePath);
+                    hashes[origin_types_1.default.ORIGIN.SUBDB] = yield hash_1.default.subdbHash(filePath);
+                }
                 var info = {
                     fullPath: filePath,
                     filename,
